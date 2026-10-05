@@ -1,0 +1,18 @@
+---
+import { profile } from "../data/profile";
+---
+
+<section id="top" class="hero">
+  <div class="hero-text">
+    <p class="prompt">$ whoami</p>
+    <h1>{profile.name}</h1>
+    <p class="role">{profile.role}</p>
+    <p class="lead">{profile.intro}</p>
+    <p class="badge">{profile.education}</p>
+    <div class="ctas">
+      <a class="btn" href="#projects">[ see work ]</a>
+      <a class="btn ghost" href="#contact">[ let's talk ]</a>
+    </div>
+  </div>
+  <div class="portrait" role="img" aria-label="Portrait placeholder">[ portrait ]</div>
+</section>

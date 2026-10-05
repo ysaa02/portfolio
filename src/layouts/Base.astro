@@ -1,0 +1,41 @@
+---
+import "../styles/global.css";
+import Loader from "../components/Loader.astro";
+import { profile } from "../data/profile";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script is:inline>
+      // Apply the theme before first paint so it never flashes: a saved choice wins, otherwise the system setting.
+      // The loading class shows the boot screen; Loader.astro removes it.
+      // It's skipped when arriving on a section link like /#projects.
+      if (!location.hash || location.hash === "#top") document.documentElement.classList.add("loading");
+      (function () {
+        var saved = null;
+        try { saved = localStorage.getItem("theme"); } catch (e) {}
+        var dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        if (dark) document.documentElement.dataset.theme = "dark";
+      })();
+    </script>
+  </head>
+  <body>
+    <Loader initials={profile.initials} />
+    <a class="skip" href="#main">Skip to content</a>
+    <slot />
+  </body>
+</html>

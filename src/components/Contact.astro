@@ -1,0 +1,18 @@
+---
+import { profile } from "../data/profile";
+---
+
+<footer id="contact" class="contact">
+  <p class="prompt">$ sudo hire {profile.handle}</p>
+  <h2>Let's build something.</h2>
+  <p><a href={`mailto:${profile.email}`}>{profile.email}</a></p>
+  <p class="links">
+    {profile.links.map((link, i) => <>{i > 0 && " "}<a href={link.url}>[ {link.label} ]</a></>)}
+  </p>
+  <p class="muted">© <span data-year>{new Date().getFullYear()}</span> {profile.name}</p>
+</footer>
+
+<script>
+  // Keep the year current between deploys.
+  document.querySelector("[data-year]")!.textContent = String(new Date().getFullYear());
+</script>

@@ -1,0 +1,9 @@
+[
+  {
+    "id": "testimonial-1",
+    "order": 1,
+    "quote": "[A short quote from a client or colleague about working with you.]",
+    "name": "[NAME]",
+    "company": "[COMPANY]"
+  }
+]

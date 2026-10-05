@@ -1,0 +1,62 @@
+[
+  {
+    "id": "skill-1",
+    "order": 1,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-2",
+    "order": 2,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-3",
+    "order": 3,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-4",
+    "order": 4,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-5",
+    "order": 5,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-6",
+    "order": 6,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-7",
+    "order": 7,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-8",
+    "order": 8,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-9",
+    "order": 9,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-10",
+    "order": 10,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-11",
+    "order": 11,
+    "name": "[Skill]"
+  },
+  {
+    "id": "skill-12",
+    "order": 12,
+    "name": "[Skill]"
+  }
+]

@@ -1,0 +1,15 @@
+---
+import { getCollection } from "astro:content";
+import Section from "./Section.astro";
+
+const testimonials = (await getCollection("testimonials")).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Section id="testimonials" title="testimonials">
+  {testimonials.map(({ data }) => (
+    <blockquote>
+      <p>"{data.quote}"</p>
+      <footer>— {data.name}, {data.company}</footer>
+    </blockquote>
+  ))}
+</Section>

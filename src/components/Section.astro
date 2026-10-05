@@ -1,0 +1,13 @@
+---
+// A page section with the "~/name" heading.
+interface Props {
+  id: string;
+  title: string;
+}
+const { id, title } = Astro.props;
+---
+
+<section id={id}>
+  <h2><span>~/</span>{title}</h2>
+  <slot />
+</section>

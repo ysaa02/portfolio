@@ -1,0 +1,49 @@
+---
+interface Props {
+  handle: string;
+}
+const { handle } = Astro.props;
+
+const links = [
+  { href: "#projects", label: "projects" },
+  { href: "#skills", label: "skills" },
+  { href: "#awards", label: "awards" },
+  { href: "#certifications", label: "certs" },
+  { href: "#testimonials", label: "testimonials" },
+  { href: "#contact", label: "contact" },
+];
+---
+
+<header class="nav">
+  <a class="brand" href="#top">~/{handle}</a>
+  <nav>
+    {links.map((link) => <a href={link.href}>{link.label}</a>)}
+  </nav>
+  <button class="theme" type="button" data-theme-toggle>[ theme ]</button>
+</header>
+
+<script>
+  // Theme toggle, remembered across visits. Until the visitor picks one, the theme follows the system setting.
+  // The button names the theme it switches to.
+  const root = document.documentElement;
+  const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]")!;
+  const systemDark = matchMedia("(prefers-color-scheme: dark)");
+  const setTheme = (theme: "light" | "dark") => {
+    if (theme === "dark") root.dataset.theme = "dark";
+    else delete root.dataset.theme;
+    const other = theme === "dark" ? "light" : "dark";
+    toggle.textContent = `[ ${other} ]`;
+    toggle.setAttribute("aria-label", `Switch to ${other} theme`);
+  };
+  setTheme(root.dataset.theme === "dark" ? "dark" : "light");
+  toggle.addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  });
+  systemDark.addEventListener("change", (e) => {
+    let saved = null;
+    try { saved = localStorage.getItem("theme"); } catch (err) {}
+    if (!saved) setTheme(e.matches ? "dark" : "light");
+  });
+</script>

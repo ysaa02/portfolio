@@ -1,0 +1,24 @@
+---
+// Numbered cards for awards and certifications.
+import { getCollection } from "astro:content";
+import Section from "./Section.astro";
+import { pad } from "../lib/format";
+
+interface Props {
+  collection: "awards" | "certifications";
+}
+const { collection } = Astro.props;
+const items = (await getCollection(collection)).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Section id={collection} title={collection}>
+  <div class="list">
+    {items.map(({ data }, i) => (
+      <article class="card">
+        <span class="num">{pad(i + 1)}</span>
+        <h3>{data.title}</h3>
+        <p>{data.issuer} · {data.year}</p>
+      </article>
+    ))}
+  </div>
+</Section>

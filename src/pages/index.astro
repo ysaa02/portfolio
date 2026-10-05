@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
+import Hero from "../components/Hero.astro";
+import Projects from "../components/Projects.astro";
+import Skills from "../components/Skills.astro";
+import CardList from "../components/CardList.astro";
+import Testimonials from "../components/Testimonials.astro";
+import Contact from "../components/Contact.astro";
+import { profile } from "../data/profile";
+---
+
+<Base title={`${profile.name} | Portfolio`} description={profile.description}>
+  <Nav handle={profile.handle} />
+  <main id="main">
+    <Hero />
+    <Projects />
+    <Skills />
+    <CardList collection="awards" />
+    <CardList collection="certifications" />
+    <Testimonials />
+  </main>
+  <Contact />
+</Base>
