@@ -5,31 +5,58 @@ import Icon from "./Icon.astro";
 import { pad } from "../lib/format";
 
 const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+const tags = [...new Set(projects.flatMap(({ data }) => data.tags))];
 ---
 
 <Section id="projects" title="projects">
-  <div class="carousel" data-carousel>
-    <div class="track">
-      {projects.map(({ data }, i) => (
-        <article class="card">
+  <div class="filters" role="group" aria-label="Filter projects by tag">
+    <button type="button" aria-pressed="true" data-filter="">all</button>
+    {tags.map((tag) => <button type="button" aria-pressed="false" data-filter={tag}>{tag}</button>)}
+  </div>
+  <div class="projects">
+    {projects.map(({ data }, i) => (
+      <details class="project" name="project" open={i === 0} data-tags={JSON.stringify(data.tags)}>
+        <summary>
           <span class="num">{pad(i + 1)}</span>
           <h3>{data.title}</h3>
+          <span class="tags">{data.tags.slice(0, 2).join(" · ")}</span>
+          <span class="project-mark" aria-hidden="true"></span>
+        </summary>
+        <div class="body">
           <p>{data.description}</p>
           <p class="tags">{data.tags.join(" · ")}</p>
-          <a href={data.url} aria-label={`Visit ${data.title}`}><Icon name="visit" /></a>
-        </article>
-      ))}
-    </div>
-    <p class="counter"><span data-count>01</span>/{pad(projects.length)} · keep scrolling</p>
+          <a href={data.url}>Visit {data.title} <Icon name="visit" /></a>
+        </div>
+      </details>
+    ))}
   </div>
+  <p class="counter" aria-live="polite"><span data-count>{pad(projects.length)}</span>/{pad(projects.length)} projects</p>
 </Section>
 
 <script>
-  // Project carousel counter follows the scroll position.
-  const track = document.querySelector<HTMLElement>("[data-carousel] .track")!;
+  // Tag filters: hide rows without the chosen tag; the view transition animates the reflow.
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-filter]");
+  const rows = document.querySelectorAll<HTMLDetailsElement>(".project");
   const count = document.querySelector<HTMLElement>("[data-count]")!;
-  track.addEventListener("scroll", () => {
-    const step = track.firstElementChild!.getBoundingClientRect().width + 16;
-    count.textContent = String(Math.round(track.scrollLeft / step) + 1).padStart(2, "0");
-  });
+  const calm = matchMedia("(prefers-reduced-motion: reduce)");
+
+  const apply = (tag: string) => {
+    let shown = 0;
+    rows.forEach((row) => {
+      const match = !tag || (JSON.parse(row.dataset.tags!) as string[]).includes(tag);
+      row.hidden = !match;
+      if (!match) row.open = false;
+      if (match) shown++;
+    });
+    count.textContent = String(shown).padStart(2, "0");
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === tag)));
+  };
+
+  buttons.forEach((button) =>
+    button.addEventListener("click", () => {
+      const tag = button.dataset.filter!;
+      if (document.startViewTransition && !calm.matches) document.startViewTransition(() => apply(tag));
+      else apply(tag);
+    }),
+  );
 </script>

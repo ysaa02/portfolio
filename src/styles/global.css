@@ -95,12 +95,46 @@ h2 span, .prompt, .muted, .tags, .counter, .num { color: var(--muted); }
 .card a { text-decoration: none; font-weight: 500; }
 .num { font-size: 13px; }
 
-.track {
-  display: grid; grid-auto-flow: column; grid-auto-columns: min(80%, 420px); gap: 16px;
-  overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px;
+/* Projects: tag filters, then accordion rows, one open at a time (shared details name).
+   The diamond turns into a filled marker when open. */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.filters button {
+  background: none; border: 1px solid var(--line); color: var(--muted); font: inherit; font-size: 13px;
+  padding: 6px 12px; min-height: 32px; cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
-.track .card { scroll-snap-align: start; }
+.filters button:hover { border-color: var(--ink); color: var(--ink); }
+.filters button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.filters button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .counter { font-size: 13px; margin-top: 16px; }
+.projects { border-top: 1px solid var(--line); interpolate-size: allow-keywords; }
+.project { border-bottom: 1px solid var(--line); }
+.project summary {
+  display: grid; grid-template-columns: 3ch minmax(0, 1fr) auto 12px; gap: 16px; align-items: baseline;
+  padding: 20px 0; cursor: pointer; list-style: none;
+}
+.project summary::-webkit-details-marker { display: none; }
+.project h3 { margin: 0; font-size: clamp(22px, 3.6vw, 40px); letter-spacing: -0.02em; line-height: 1.15; }
+.project summary .tags { font-size: 13px; }
+.project-mark { width: 10px; height: 10px; border: 1px solid var(--ink); rotate: 45deg; align-self: center; }
+.project[open] .project-mark { background: var(--ink); rotate: 225deg; }
+.project summary:hover h3 { translate: 8px 0; }
+.project summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.project .body { padding: 0 0 28px calc(3ch + 16px); max-width: calc(64ch + 3ch + 16px); }
+.project .body p { margin: 0 0 12px; }
+.project .body a { display: inline-flex; gap: 8px; align-items: center; font-weight: 500; text-underline-offset: 4px; }
+@media (prefers-reduced-motion: no-preference) {
+  .project h3, .project-mark { transition: translate 0.3s ease, rotate 0.4s ease, background 0.3s; }
+  .project::details-content {
+    block-size: 0; overflow: hidden;
+    transition: block-size 0.4s ease, content-visibility 0.4s allow-discrete;
+  }
+  .project[open]::details-content { block-size: auto; }
+}
+@media (max-width: 767px) {
+  .project summary { grid-template-columns: 3ch minmax(0, 1fr) 12px; }
+  .project summary .tags { display: none; }
+  .project .body { padding-left: 0; }
+}
 
 /* Skills: category tabs and the logo dial (script in Skills.astro). */
 /* overflow-x: clip keeps the spinning dial's rotated box from widening the page, which made phones zoom in and out. */

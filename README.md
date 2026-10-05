@@ -25,7 +25,7 @@ All text lives in `src/data/`. Replace each `[PLACEHOLDER]`:
 | File | What it holds |
 |---|---|
 | `profile.ts` | Name, handle, loading-screen name, role, intro, education, email, social links |
-| `projects.json` | Project cards: title, description, tags, link |
+| `projects.json` | Project rows (expand on click, filter by tag): title, description, tags, link |
 | `skills.json` | Skills dial: `name`, `category` (one tab per category), `icon` (an SVG file name in `src/assets/skills/`) and optional `color` |
 | `awards.json`, `certifications.json` | Numbered cards: title, issuer, year |
 | `testimonials.json` | Quotes |
@@ -62,7 +62,7 @@ Safeguards: same-site requests only, 10 messages per minute per visitor, 500 cha
 
 ## Testing
 
-Run `npm run build` before committing: it fails on type errors and invalid content. In Claude Code, `/site-qa` runs browser checks (loader, theme, carousel, responsive layouts, Lighthouse).
+Run `npm run build` before committing: it fails on type errors and invalid content. In Claude Code, `/site-qa` runs browser checks (loader, theme, project filters, responsive layouts, Lighthouse).
 
 ## Deploy (Cloudflare Workers)
 
