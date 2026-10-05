@@ -1,6 +1,6 @@
 # Portfolio
 
-A personal portfolio with a terminal-style look, built with [Astro](https://astro.build). It builds to static HTML, CSS and a little JavaScript, so it can be hosted anywhere (Cloudflare Pages recommended).
+A personal portfolio with a terminal-style look, built with [Astro](https://astro.build). It builds to static HTML, CSS and a little JavaScript, so it can be hosted anywhere; it runs on Cloudflare Workers.
 
 ## Run locally
 
@@ -50,9 +50,14 @@ Light and dark colors are the two token blocks at the top of `src/styles/global.
 
 Run `npm run build` before committing: it fails on type errors and invalid content. In Claude Code, `/site-qa` runs browser checks (loader, theme, carousel, responsive layouts, Lighthouse).
 
-## Deploy (Cloudflare Pages)
+## Deploy (Cloudflare Workers)
 
-Connect the GitHub repo in Cloudflare Pages with build command `npm run build` and output directory `dist`.
+Live at https://elaisa-laguerta-portfolio.laguertaelaisa.workers.dev. The site is served as static assets by a Cloudflare Worker, configured in `wrangler.jsonc`.
+
+```sh
+npx wrangler@4 login   # once per computer
+npm run deploy         # builds, then uploads dist/
+```
 
 ## Commits
 

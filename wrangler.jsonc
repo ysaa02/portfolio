@@ -1,0 +1,11 @@
+// Cloudflare Workers config: serves the static build in dist/ at
+// https://elaisa-laguerta-portfolio.laguertaelaisa.workers.dev
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "elaisa-laguerta-portfolio",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
