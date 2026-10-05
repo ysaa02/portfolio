@@ -2,11 +2,12 @@
 import { Image } from "astro:assets";
 import portrait from "../assets/portrait.png";
 import { profile } from "../data/profile";
+import Icon from "./Icon.astro";
 ---
 
 <section id="top" class="hero">
   <div class="hero-text">
-    <p class="prompt">$ whoami</p>
+    <p class="prompt">hello, i'm</p>
     <h1>{profile.name}</h1>
     <p class="role">{profile.role}</p>
     <p class="lead">{profile.intro}</p>
@@ -15,6 +16,137 @@ import { profile } from "../data/profile";
       <a class="btn" href="#projects">[ see work ]</a>
       <a class="btn ghost" href="#contact">[ let's talk ]</a>
     </div>
+    <form class="hero-ask" data-hero-ask>
+      <label class="sr-only" for="hero-ask">Ask the chatbot about {profile.loaderName.split(" ")[0]}</label>
+      <span class="prompt" aria-hidden="true">&gt;</span>
+      <input id="hero-ask" type="text" maxlength="500" autocomplete="off" placeholder="ask me anything about my work" />
+      <button type="submit" aria-label="Ask"><Icon name="send" /></button>
+    </form>
   </div>
-  <Image class="portrait" src={portrait} alt={`Portrait of ${profile.loaderName}`} widths={[360, 560, 840]} sizes="(max-width: 767px) 280px, 40vw" format="webp" loading="eager" fetchpriority="high" />
+  <div class="portrait" data-portrait>
+    <span class="mark tl" aria-hidden="true"></span><span class="mark tr" aria-hidden="true"></span>
+    <span class="mark bl" aria-hidden="true"></span><span class="mark br" aria-hidden="true"></span>
+    <Image src={portrait} alt={`Portrait of ${profile.loaderName}`} widths={[360, 560, 840]} sizes="(max-width: 767px) 280px, 40vw" format="webp" loading="eager" fetchpriority="high" />
+  </div>
 </section>
+
+<script>
+  // Ask box: hands the question to the chatbot (Chat.astro), which opens and answers it.
+  // Clicking the field, or sending it empty, opens the chatbot with the cursor in its own input.
+  const askForm = document.querySelector<HTMLFormElement>("[data-hero-ask]");
+  const field = askForm?.querySelector("input");
+  const openChat = () => {
+    document.dispatchEvent(new CustomEvent("chat:open", { detail: field!.value }));
+    field!.value = "";
+  };
+  field?.addEventListener("click", openChat);
+  askForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const question = field!.value.trim();
+    if (!question) return openChat();
+    field!.value = "";
+    document.dispatchEvent(new CustomEvent("chat:ask", { detail: question }));
+  });
+
+  // ASCII lens: redraws the photo as characters inside a circle around the pointer.
+  // On touch screens the circle drifts by itself while the photo is on screen.
+  const CHARS = " .:-=+*#%@"; // light to dark
+  const CELL = 8;
+  const RADIUS = 66;
+  const ALPHA = 0.55;
+
+  const frame = document.querySelector<HTMLElement>("[data-portrait]");
+  const img = frame?.querySelector("img");
+  const hover = matchMedia("(hover: hover) and (pointer: fine)");
+  const lowEnd = (navigator.hardwareConcurrency || 8) <= 2 || ((navigator as { deviceMemory?: number }).deviceMemory ?? 8) <= 2;
+
+  if (frame && img && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("aria-hidden", "true");
+    frame.append(canvas);
+    const ctx = canvas.getContext("2d")!;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    let w = 0, h = 0, cols = 0, rows = 0;
+    let shade: Float32Array | null = null; // brightness per character cell
+    let ready = false;
+    let px = -1, py = -1, queued = 0;
+
+    // Sample the photo once per size: one brightness value per character cell.
+    const measure = () => {
+      const box = img.getBoundingClientRect();
+      w = Math.round(box.width);
+      h = Math.round(box.height);
+      if (!w || !h || !img.complete || !img.naturalWidth) return false;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.font = `bold ${CELL}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
+      ctx.textBaseline = "top";
+      cols = Math.ceil(w / CELL);
+      rows = Math.ceil(h / CELL);
+      const sample = document.createElement("canvas");
+      sample.width = cols;
+      sample.height = rows;
+      const sctx = sample.getContext("2d", { willReadFrequently: true })!;
+      // Match the img's object-fit: cover.
+      const scale = Math.max(cols / img.naturalWidth, rows / img.naturalHeight);
+      const sw = img.naturalWidth * scale, sh = img.naturalHeight * scale;
+      sctx.drawImage(img, (cols - sw) / 2, (rows - sh) / 2, sw, sh);
+      const data = sctx.getImageData(0, 0, cols, rows).data;
+      shade = new Float32Array(cols * rows);
+      for (let i = 0; i < shade.length; i++) shade[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+      return true;
+    };
+
+    const draw = (alpha = ALPHA) => {
+      queued = 0;
+      ctx.clearRect(0, 0, w, h);
+      if (!shade || px < 0) return;
+      const c0 = Math.max(0, Math.floor((px - RADIUS) / CELL)), c1 = Math.min(cols - 1, Math.ceil((px + RADIUS) / CELL));
+      const r0 = Math.max(0, Math.floor((py - RADIUS) / CELL)), r1 = Math.min(rows - 1, Math.ceil((py + RADIUS) / CELL));
+      for (let r = r0; r <= r1; r++) {
+        for (let c = c0; c <= c1; c++) {
+          const d = Math.hypot(c * CELL + CELL / 2 - px, r * CELL + CELL / 2 - py);
+          if (d > RADIUS) continue;
+          const ch = CHARS[Math.floor(((255 - shade[r * cols + c]) / 255) * (CHARS.length - 1))];
+          if (ch === " ") continue;
+          ctx.fillStyle = `rgba(255,255,255,${((1 - d / RADIUS) * alpha).toFixed(3)})`;
+          ctx.fillText(ch, c * CELL, r * CELL);
+        }
+      }
+    };
+
+    const clear = () => { px = -1; if (w && h) ctx.clearRect(0, 0, w, h); };
+    window.addEventListener("resize", () => (ready = false));
+    img.addEventListener("load", () => (ready = false));
+
+    frame.addEventListener("pointermove", (e) => {
+      if (!hover.matches || !(ready ||= measure())) return;
+      const box = img.getBoundingClientRect();
+      px = e.clientX - box.left;
+      py = e.clientY - box.top;
+      queued ||= requestAnimationFrame(() => draw());
+    });
+    frame.addEventListener("pointerleave", () => { if (hover.matches) clear(); });
+
+    // Touch screens: let the lens wander on its own, about 30 frames a second, only while visible.
+    if (!lowEnd) {
+      let visible = false, running = false, start = -1, last = 0;
+      const tick = (t: number) => {
+        if (!visible || hover.matches) { running = false; return; }
+        if (!document.documentElement.classList.contains("loading") && (ready ||= measure()) && t - last >= 33) {
+          last = t;
+          if (start < 0) start = t;
+          const s = (t - start) / 1000;
+          px = w * (0.5 + 0.32 * Math.sin(s * 0.7));
+          py = h * (0.45 + 0.3 * Math.cos(s * 1.1));
+          draw(ALPHA * 0.45);
+        }
+        requestAnimationFrame(tick);
+      };
+      const run = () => { if (!running) { running = true; requestAnimationFrame(tick); } };
+      new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; run(); }).observe(frame);
+      hover.addEventListener("change", () => { clear(); ready = false; run(); });
+    }
+  }
+</script>

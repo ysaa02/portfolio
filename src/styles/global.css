@@ -82,11 +82,41 @@ h2 span, .prompt, .muted, .tags, .counter, .num { color: var(--muted); }
 .role { font-size: 18px; margin: 0; }
 .lead { max-width: 52ch; color: var(--muted); }
 .badge { display: inline-block; border: 1px solid var(--line); padding: 4px 12px; font-size: 13px; }
-.portrait {
+/* Portrait: corner marks breathe outward on hover; Hero.astro draws the ASCII lens on the canvas. */
+.portrait { position: relative; width: 100%; }
+.portrait canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.mark {
+  position: absolute; z-index: 2; width: 14px; height: 14px; border: 0 solid var(--ink); pointer-events: none;
+  translate: var(--x) var(--y); transition: translate 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.mark.tl { top: 0; left: 0; border-width: 1px 0 0 1px; --x: -7px; --y: -7px; }
+.mark.tr { top: 0; right: 0; border-width: 1px 1px 0 0; --x: 7px; --y: -7px; }
+.mark.bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; --x: -7px; --y: 7px; }
+.mark.br { bottom: 0; right: 0; border-width: 0 1px 1px 0; --x: 7px; --y: 7px; }
+.portrait:hover .mark { translate: calc(var(--x) * 2) calc(var(--y) * 2); }
+@keyframes mark-breathe { to { translate: calc(var(--x) * 2) calc(var(--y) * 2); } }
+@media (prefers-reduced-motion: no-preference) {
+  .portrait:hover .mark { translate: var(--x) var(--y); animation: mark-breathe 1.2s ease-in-out infinite alternate; }
+}
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .mark { animation: mark-breathe 2.4s ease-in-out infinite alternate; }
+}
+.portrait img {
   display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 60%;
   border: 1px solid var(--line); background: var(--card);
 }
 .ctas { display: flex; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+/* Hero ask box: sends the question to the chatbot. */
+.hero-ask {
+  display: flex; align-items: center; gap: 10px; max-width: 460px; margin-top: 24px; padding: 4px 4px 4px 14px;
+  border: 1px solid var(--line); background: var(--card); transition: border-color 0.2s;
+}
+.hero-ask:focus-within { border-color: var(--ink); }
+.hero-ask .prompt { color: var(--muted); }
+.hero-ask input { flex: 1; min-width: 0; padding: 10px 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: 14px; }
+.hero-ask input:focus { outline: none; }
+.hero-ask input::placeholder { color: var(--muted); }
+.hero-ask button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: var(--ink); color: var(--paper); cursor: pointer; }
 .btn { background: var(--ink); color: var(--paper); padding: 12px 20px; text-decoration: none; }
 .btn.ghost { background: none; color: var(--ink); border: 1px solid var(--ink); }
 
@@ -193,7 +223,7 @@ blockquote footer { color: var(--muted); font-size: 14px; margin-top: 16px; }
 
 @media (max-width: 767px) {
   .hero { grid-template-columns: 1fr; min-height: auto; }
-  .portrait { max-width: 280px; }
+  .portrait { max-width: 280px; order: -1; justify-self: center; }
 }
 
 /* Chatbot */

@@ -5,7 +5,7 @@ export const profile = {
   loaderName: "Elaisa Laguerta",
   role: "[Your Role] · [Specialty] · [Specialty]",
   intro: "[A one or two sentence intro about what you build and who you build it for.]",
-  education: "[Degree] · [School] · [Honor]",
+  education: "BS Information Technology · 3rd year",
   description: "Elaisa Laguerta — [ROLE]. Placeholder portfolio.",
   email: "lgrta15@gmail.com",
   // Tappable starter questions shown when the chat opens.
