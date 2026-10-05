@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[YOUR NAME] | Portfolio</title>
+  <meta name="description" content="[YOUR NAME] — [ROLE]. Placeholder portfolio." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <script>
+    // Apply a saved theme before first paint so it never flashes.
+    (function () {
+      try {
+        if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="brand" href="#top">~/[your-name]</a>
+    <nav>
+      <a href="#projects">projects</a>
+      <a href="#skills">skills</a>
+      <a href="#awards">awards</a>
+      <a href="#certifications">certs</a>
+      <a href="#testimonials">testimonials</a>
+      <a href="#contact">contact</a>
+    </nav>
+    <button class="theme" type="button" data-theme-toggle aria-label="Toggle theme">[ theme ]</button>
+  </header>
+
+  <main id="main">
+    <section id="top" class="hero">
+      <div class="hero-text">
+        <p class="prompt">$ whoami</p>
+        <h1>[YOUR NAME]</h1>
+        <p class="role">[Your Role] · [Specialty] · [Specialty]</p>
+        <p class="lead">[A one or two sentence intro about what you build and who you build it for.]</p>
+        <p class="badge">[Degree] · [School] · [Honor]</p>
+        <div class="ctas">
+          <a class="btn" href="#projects">[ see work ]</a>
+          <a class="btn ghost" href="#contact">[ let's talk ]</a>
+        </div>
+      </div>
+      <div class="portrait" role="img" aria-label="Portrait placeholder">[ portrait ]</div>
+    </section>
+
+    <section id="projects">
+      <h2><span>~/</span>projects</h2>
+      <div class="carousel" data-carousel>
+        <div class="track">
+          <article class="card"><span class="num">01</span><h3>[Project One]</h3><p>[Short description of the problem and result.]</p><p class="tags">[tech] · [tech] · [tech]</p><a href="#">[ visit ]</a></article>
+          <article class="card"><span class="num">02</span><h3>[Project Two]</h3><p>[Short description of the problem and result.]</p><p class="tags">[tech] · [tech]</p><a href="#">[ visit ]</a></article>
+          <article class="card"><span class="num">03</span><h3>[Project Three]</h3><p>[Short description of the problem and result.]</p><p class="tags">[tech] · [tech]</p><a href="#">[ visit ]</a></article>
+          <article class="card"><span class="num">04</span><h3>[Project Four]</h3><p>[Short description of the problem and result.]</p><p class="tags">[tech] · [tech]</p><a href="#">[ visit ]</a></article>
+          <article class="card"><span class="num">05</span><h3>[Project Five]</h3><p>[Short description of the problem and result.]</p><p class="tags">[tech] · [tech]</p><a href="#">[ visit ]</a></article>
+        </div>
+        <p class="counter"><span data-count>01</span>/05 · keep scrolling</p>
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2><span>~/</span>skills</h2>
+      <ul class="grid">
+        <li>[Skill]</li><li>[Skill]</li><li>[Skill]</li><li>[Skill]</li>
+        <li>[Skill]</li><li>[Skill]</li><li>[Skill]</li><li>[Skill]</li>
+        <li>[Skill]</li><li>[Skill]</li><li>[Skill]</li><li>[Skill]</li>
+      </ul>
+    </section>
+
+    <section id="awards">
+      <h2><span>~/</span>awards</h2>
+      <div class="list">
+        <article class="card"><span class="num">01</span><h3>[Award Title]</h3><p>[Issuer] · [Year]</p></article>
+        <article class="card"><span class="num">02</span><h3>[Award Title]</h3><p>[Issuer] · [Year]</p></article>
+        <article class="card"><span class="num">03</span><h3>[Award Title]</h3><p>[Issuer] · [Year]</p></article>
+      </div>
+    </section>
+
+    <section id="certifications">
+      <h2><span>~/</span>certifications</h2>
+      <div class="list">
+        <article class="card"><span class="num">01</span><h3>[Certification]</h3><p>[Issuer] · [Year]</p></article>
+        <article class="card"><span class="num">02</span><h3>[Certification]</h3><p>[Issuer] · [Year]</p></article>
+        <article class="card"><span class="num">03</span><h3>[Certification]</h3><p>[Issuer] · [Year]</p></article>
+        <article class="card"><span class="num">04</span><h3>[Certification]</h3><p>[Issuer] · [Year]</p></article>
+      </div>
+    </section>
+
+    <section id="testimonials">
+      <h2><span>~/</span>testimonials</h2>
+      <blockquote>
+        <p>"[A short quote from a client or colleague about working with you.]"</p>
+        <footer>— [NAME], [COMPANY]</footer>
+      </blockquote>
+    </section>
+  </main>
+
+  <footer id="contact" class="contact">
+    <p class="prompt">$ sudo hire [your-name]</p>
+    <h2>Let's build something.</h2>
+    <p><a href="mailto:you@example.com">you@example.com</a></p>
+    <p class="links"><a href="#">[ github ]</a> <a href="#">[ linkedin ]</a></p>
+    <p class="muted">© <span data-year></span> [YOUR NAME]</p>
+  </footer>
+
+  <script src="assets/main.js"></script>
+</body>
+</html>

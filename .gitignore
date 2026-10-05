@@ -1,0 +1,19 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.dev.vars
+
+# Dependencies and builds
+node_modules/
+dist/
+.wrangler/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
