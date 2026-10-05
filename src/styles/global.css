@@ -83,8 +83,8 @@ h2 span, .prompt, .muted, .tags, .counter, .num { color: var(--muted); }
 .lead { max-width: 52ch; color: var(--muted); }
 .badge { display: inline-block; border: 1px solid var(--line); padding: 4px 12px; font-size: 13px; }
 .portrait {
-  aspect-ratio: 4 / 5; border: 1px dashed var(--muted); background: var(--card);
-  display: grid; place-items: center; color: var(--muted);
+  display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 60%;
+  border: 1px solid var(--line); background: var(--card);
 }
 .ctas { display: flex; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
 .btn { background: var(--ink); color: var(--paper); padding: 12px 20px; text-decoration: none; }

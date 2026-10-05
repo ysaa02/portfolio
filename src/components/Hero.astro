@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+import portrait from "../assets/portrait.png";
 import { profile } from "../data/profile";
 ---
 
@@ -14,5 +16,5 @@ import { profile } from "../data/profile";
       <a class="btn ghost" href="#contact">[ let's talk ]</a>
     </div>
   </div>
-  <div class="portrait" role="img" aria-label="Portrait placeholder">[ portrait ]</div>
+  <Image class="portrait" src={portrait} alt={`Portrait of ${profile.loaderName}`} widths={[360, 560, 840]} sizes="(max-width: 767px) 280px, 40vw" format="webp" loading="eager" fetchpriority="high" />
 </section>
