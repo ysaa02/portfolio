@@ -42,16 +42,23 @@ function parseMessages(body: unknown): Message[] | null {
 }
 
 async function askGemini(env: Env, messages: Message[]): Promise<string> {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent`, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY! },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
-      generationConfig: { maxOutputTokens: 400 },
-    }),
-    signal: AbortSignal.timeout(20000),
-  });
+  const request = () =>
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY! },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+        generationConfig: { maxOutputTokens: 400 },
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+  // Gemini sometimes answers 503 "high demand" for a moment; one retry after a short pause usually succeeds.
+  let res = await request();
+  if (res.status === 503 || res.status === 500) {
+    await new Promise((r) => setTimeout(r, 800));
+    res = await request();
+  }
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const data = (await res.json()) as {
     candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
