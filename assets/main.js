@@ -1,10 +1,25 @@
-// Theme toggle, remembered across visits.
-document.querySelector("[data-theme-toggle]").addEventListener("click", () => {
-  const root = document.documentElement;
-  const next = root.dataset.theme === "dark" ? "light" : "dark";
-  if (next === "dark") root.dataset.theme = "dark";
+// Theme toggle, remembered across visits. Until the visitor picks one, the theme follows the system setting.
+// The button names the theme it switches to.
+const root = document.documentElement;
+const toggle = document.querySelector("[data-theme-toggle]");
+const systemDark = matchMedia("(prefers-color-scheme: dark)");
+const setTheme = (theme) => {
+  if (theme === "dark") root.dataset.theme = "dark";
   else delete root.dataset.theme;
+  const other = theme === "dark" ? "light" : "dark";
+  toggle.textContent = `[ ${other} ]`;
+  toggle.setAttribute("aria-label", `Switch to ${other} theme`);
+};
+setTheme(root.dataset.theme === "dark" ? "dark" : "light");
+toggle.addEventListener("click", () => {
+  const next = root.dataset.theme === "dark" ? "light" : "dark";
+  setTheme(next);
   try { localStorage.setItem("theme", next); } catch (e) {}
+});
+systemDark.addEventListener("change", (e) => {
+  let saved = null;
+  try { saved = localStorage.getItem("theme"); } catch (err) {}
+  if (!saved) setTheme(e.matches ? "dark" : "light");
 });
 
 // Project carousel counter follows the scroll position.

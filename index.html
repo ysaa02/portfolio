@@ -10,14 +10,15 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/styles.css" />
   <script>
-    // Apply a saved theme before first paint so it never flashes.
+    // Apply the theme before first paint so it never flashes: a saved choice wins, otherwise the system setting.
     // The loading class shows the boot screen; main.js removes it.
     // It's skipped when arriving on a section link like /#projects.
     if (!location.hash || location.hash === "#top") document.documentElement.classList.add("loading");
     (function () {
-      try {
-        if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
-      } catch (e) {}
+      var saved = null;
+      try { saved = localStorage.getItem("theme"); } catch (e) {}
+      var dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.dataset.theme = "dark";
     })();
   </script>
 </head>
@@ -45,7 +46,7 @@
       <a href="#testimonials">testimonials</a>
       <a href="#contact">contact</a>
     </nav>
-    <button class="theme" type="button" data-theme-toggle aria-label="Toggle theme">[ theme ]</button>
+    <button class="theme" type="button" data-theme-toggle>[ theme ]</button>
   </header>
 
   <main id="main">
