@@ -4,7 +4,8 @@
   --muted: #4f6156;
   --line: #d3ddd2;
   --card: #ffffff;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
@@ -68,6 +69,7 @@ a { color: inherit; }
 
 main, .contact { max-width: 1100px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px); }
 section { padding: clamp(64px, 10vw, 120px) 0; border-bottom: 1px solid var(--line); scroll-margin-top: 60px; }
+h1, h2, h3 { font-family: var(--font-display); }
 h1 { font-size: clamp(40px, 8vw, 88px); line-height: 1; margin: 8px 0 16px; letter-spacing: -0.04em; }
 h2 { font-size: clamp(24px, 4vw, 36px); margin: 0 0 32px; }
 h2 span, .prompt, .muted, .tags, .counter, .num { color: var(--muted); }
