@@ -1,4 +1,6 @@
 ---
+import Icon from "./Icon.astro";
+
 interface Props {
   handle: string;
 }
@@ -7,12 +9,14 @@ const { handle } = Astro.props;
 
 <header class="nav">
   <a class="brand" href="#top">~/{handle}</a>
-  <button class="theme" type="button" data-theme-toggle>[ theme ]</button>
+  <button class="theme" type="button" data-theme-toggle>
+    <span class="to-dark"><Icon name="moon" /></span><span class="to-light"><Icon name="sun" /></span>
+  </button>
 </header>
 
 <script>
   // Theme toggle, remembered across visits. Until the visitor picks one, the theme follows the system setting.
-  // The button names the theme it switches to.
+  // The button's label names the theme it switches to; CSS shows the matching moon or sun icon.
   const root = document.documentElement;
   const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]")!;
   const systemDark = matchMedia("(prefers-color-scheme: dark)");
@@ -20,7 +24,6 @@ const { handle } = Astro.props;
     if (theme === "dark") root.dataset.theme = "dark";
     else delete root.dataset.theme;
     const other = theme === "dark" ? "light" : "dark";
-    toggle.textContent = `[ ${other} ]`;
     toggle.setAttribute("aria-label", `Switch to ${other} theme`);
   };
   setTheme(root.dataset.theme === "dark" ? "dark" : "light");

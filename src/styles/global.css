@@ -144,3 +144,10 @@ blockquote footer { color: var(--muted); font-size: 14px; margin-top: 16px; }
 .chat-form input:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
 .chat-form .btn { border: 0; font: inherit; font-size: 14px; cursor: pointer; padding: 10px 14px; }
 .chat-form :disabled { opacity: 0.6; cursor: wait; }
+
+/* Icons: sized to the text around them, colored by it. */
+.icon { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex-shrink: 0; }
+.theme .to-light, :root[data-theme="dark"] .theme .to-dark { display: none; }
+:root[data-theme="dark"] .theme .to-light { display: inline; }
+.chat-toggle .when-open, .chat-toggle[aria-expanded="true"] .when-closed { display: none; }
+.chat-toggle[aria-expanded="true"] .when-open { display: inline; }

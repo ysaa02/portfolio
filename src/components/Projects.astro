@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Section from "./Section.astro";
+import Icon from "./Icon.astro";
 import { pad } from "../lib/format";
 
 const projects = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
@@ -15,7 +16,7 @@ const projects = (await getCollection("projects")).sort((a, b) => a.data.order -
           <h3>{data.title}</h3>
           <p>{data.description}</p>
           <p class="tags">{data.tags.join(" · ")}</p>
-          <a href={data.url}>[ visit ]</a>
+          <a href={data.url} aria-label={`Visit ${data.title}`}><Icon name="visit" /></a>
         </article>
       ))}
     </div>

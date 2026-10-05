@@ -49,7 +49,7 @@ Light and dark colors are the two token blocks at the top of `src/styles/global.
 
 ## Chatbot
 
-The `[ chat ]` button opens an assistant that answers questions about the portfolio only. It runs on Gemini (`gemini-3.1-flash-lite`) through the Cloudflare Worker in `worker/`, which builds its instructions from `src/data/`, so update your content there and the bot knows it after the next deploy.
+The chat button in the bottom-right corner opens an assistant that answers questions about the portfolio only. It runs on Gemini (`gemini-3.1-flash-lite`) through the Cloudflare Worker in `worker/`, which builds its instructions from `src/data/`, so update your content there and the bot knows it after the next deploy.
 
 The Gemini API key never goes in the code or the browser:
 

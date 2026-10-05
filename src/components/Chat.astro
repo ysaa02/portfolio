@@ -1,5 +1,7 @@
 ---
 // Portfolio chatbot. Talks only to /api/chat (worker/index.ts); the Gemini key never reaches the browser.
+import Icon from "./Icon.astro";
+
 interface Props {
   owner: string;
 }
@@ -11,7 +13,7 @@ const firstName = owner.split(" ")[0];
   <div class="chat-panel" id="chat-panel" role="region" aria-label={`Chat about ${firstName}'s portfolio`} hidden>
     <header class="chat-head">
       <span><span class="prompt">~/</span>ask-{firstName.toLowerCase()}</span>
-      <button class="chat-close" type="button" data-chat-close aria-label="Close chat">[ x ]</button>
+      <button class="chat-close" type="button" data-chat-close aria-label="Close chat"><Icon name="close" /></button>
     </header>
     <ol class="chat-log" data-chat-log aria-live="polite">
       <li class="msg bot">Hi! Ask me about {firstName}'s projects, skills, experience or how to get in touch.</li>
@@ -19,10 +21,12 @@ const firstName = owner.split(" ")[0];
     <form class="chat-form" data-chat-form>
       <label class="sr-only" for="chat-input">Your question</label>
       <input id="chat-input" name="q" type="text" maxlength="500" autocomplete="off" placeholder="$ ask a question" required />
-      <button class="btn" type="submit">[ send ]</button>
+      <button class="btn" type="submit" aria-label="Send"><Icon name="send" /></button>
     </form>
   </div>
-  <button class="chat-toggle btn" type="button" data-chat-toggle aria-expanded="false" aria-controls="chat-panel">[ chat ]</button>
+  <button class="chat-toggle btn" type="button" data-chat-toggle aria-expanded="false" aria-controls="chat-panel" aria-label="Open chat">
+    <span class="when-closed"><Icon name="chat" /></span><span class="when-open"><Icon name="close" /></span>
+  </button>
 </div>
 
 <script>
@@ -40,7 +44,7 @@ const firstName = owner.split(" ")[0];
   const setOpen = (open: boolean) => {
     panel.hidden = !open;
     toggle.setAttribute("aria-expanded", String(open));
-    toggle.textContent = open ? "[ close ]" : "[ chat ]";
+    toggle.setAttribute("aria-label", open ? "Close chat" : "Open chat");
     if (open) input.focus();
     else toggle.focus();
   };

@@ -9,7 +9,7 @@ export const profile = {
   description: "[YOUR NAME] — [ROLE]. Placeholder portfolio.",
   email: "lgrta15@gmail.com",
   links: [
-    { label: "github", url: "#" },
-    { label: "linkedin", url: "#" },
+    { label: "github", icon: "github" as const, url: "#" },
+    { label: "linkedin", icon: "linkedin" as const, url: "#" },
   ],
 };

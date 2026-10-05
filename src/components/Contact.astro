@@ -1,13 +1,14 @@
 ---
+import Icon from "./Icon.astro";
 import { profile } from "../data/profile";
 ---
 
 <footer id="contact" class="contact">
   <p class="prompt">$ sudo hire {profile.handle}</p>
   <h2>Let's build something.</h2>
-  <p><a href={`mailto:${profile.email}`}>{profile.email}</a></p>
+  <p><a href={`mailto:${profile.email}`}><Icon name="mail" /> {profile.email}</a></p>
   <p class="links">
-    {profile.links.map((link, i) => <>{i > 0 && " "}<a href={link.url}>[ {link.label} ]</a></>)}
+    {profile.links.map((link, i) => <>{i > 0 && " "}<a href={link.url} aria-label={link.label}><Icon name={link.icon} /></a></>)}
   </p>
   <p class="muted">© <span data-year>{new Date().getFullYear()}</span> {profile.name}</p>
 </footer>
