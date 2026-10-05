@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="assets/styles.css" />
   <script>
     // Apply a saved theme before first paint so it never flashes.
+    // The loading class shows the boot screen; main.js removes it.
+    // It's skipped when arriving on a section link like /#projects.
+    if (!location.hash || location.hash === "#top") document.documentElement.classList.add("loading");
     (function () {
       try {
         if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark";
@@ -19,6 +22,17 @@
   </script>
 </head>
 <body>
+  <div class="loader" data-loader role="status" aria-label="Loading">
+    <div class="loader-box" aria-hidden="true">
+      <span class="loader-logo">EL</span>
+      <p class="loader-word"><span data-loader-word></span><span class="caret"></span></p>
+      <div class="loader-meter">
+        <span class="rail"><i data-loader-fill></i></span>
+        <span class="pct"><span data-loader-pct>0</span>%</span>
+      </div>
+    </div>
+  </div>
+
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="nav">
