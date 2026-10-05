@@ -31,32 +31,36 @@ a { color: inherit; }
 .skip { position: absolute; left: -999px; }
 .skip:focus { left: 16px; top: 16px; z-index: 20; background: var(--ink); color: var(--paper); padding: 8px; }
 
+/* Boot screen: a diamond spinner, then the name rises from the bottom edge and the screen slides up.
+   Same dark colors in both themes. */
 .loader { display: none; }
 .loading body { overflow: hidden; }
 .loading .loader {
-  display: grid; place-items: center; position: fixed; inset: 0; z-index: 30;
-  background: var(--paper); font-size: 13px; transition: opacity 0.6s ease-out;
+  display: block; position: fixed; inset: 0; z-index: 30; overflow: hidden;
+  background: #0c120e; color: #eef3ee;
 }
-.loader.done { opacity: 0; pointer-events: none; }
-.loader-box { display: flex; flex-direction: column; align-items: center; }
-.loader-logo {
-  width: 40px; height: 40px; border: 1px solid var(--muted); border-radius: 50%;
-  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+.spinner {
+  position: absolute; left: 50%; top: 46%; width: 30px; height: 30px; margin: -15px 0 0 -15px;
+  animation: spin 1.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
-.loader-word { min-width: 9ch; margin: 16px 0 0; color: var(--muted); text-align: center; white-space: nowrap; }
-.caret { display: inline-block; width: 0.6em; height: 1.1em; margin-left: 2px; vertical-align: -0.18em; background: currentColor; }
-.loader-meter { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
-.rail { position: relative; width: clamp(160px, 24vw, 240px); height: 2px; background: var(--line); overflow: hidden; }
-.rail i { position: absolute; inset: 0; background: var(--ink); transform: scaleX(0); transform-origin: left; }
-.pct { min-width: 4ch; color: var(--muted); font-variant-numeric: tabular-nums; }
-@keyframes blink { 50% { opacity: 0; } }
-@media (prefers-reduced-motion: no-preference) {
-  .caret { animation: blink 1.1s step-end infinite; }
-  .typing .caret { animation: none; }
+.diamond { position: absolute; width: 9px; height: 9px; background: currentColor; transform: rotate(45deg); }
+.spinner .diamond:nth-child(1) { left: 10.5px; top: 0; }
+.spinner .diamond:nth-child(2) { left: 21px; top: 10.5px; }
+.spinner .diamond:nth-child(3) { left: 10.5px; top: 21px; }
+.spinner .diamond:nth-child(4) { left: 0; top: 10.5px; }
+@keyframes spin { to { transform: rotate(90deg); } }
+.loader-name {
+  position: absolute; left: 0; right: 0; bottom: 2vh; margin: 0;
+  display: flex; justify-content: space-between; padding: 0 clamp(12px, 2vw, 28px);
+  font-family: "Instrument Serif", Georgia, serif; font-weight: 400;
+  font-size: min(15.5vw, 34vh); line-height: 1.05; letter-spacing: -0.01em; white-space: nowrap;
 }
-@media (prefers-reduced-motion: reduce) {
-  .loading .loader { transition-duration: 0.2s; }
-}
+/* Each word sits in a mask so it can rise into view from below its own baseline. */
+.loader-name .mask { display: block; overflow: hidden; padding-bottom: 0.14em; margin-bottom: -0.14em; }
+.loader-name .word { display: block; transform: translateY(110%); }
+.loader-name .i { position: relative; }
+/* Where the landing diamond becomes the dot of the "ı"; measured by Loader.astro. */
+.loader-name .dot-mark { position: absolute; left: 50%; top: 0.29em; width: 0.1em; height: 0.1em; transform: translateX(-50%); }
 
 .nav {
   position: sticky; top: 0; z-index: 10;

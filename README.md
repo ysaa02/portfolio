@@ -24,7 +24,7 @@ All text lives in `src/data/`. Replace each `[PLACEHOLDER]`:
 
 | File | What it holds |
 |---|---|
-| `profile.ts` | Name, handle, loader initials, role, intro, education, email, social links |
+| `profile.ts` | Name, handle, loading-screen name, role, intro, education, email, social links |
 | `projects.json` | Project cards: title, description, tags, link |
 | `skills.json` | Skill tiles |
 | `awards.json`, `certifications.json` | Numbered cards: title, issuer, year |

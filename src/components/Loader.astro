@@ -1,76 +1,108 @@
 ---
 // Boot screen. Protected: keep its design, timing and behavior as they are (see CLAUDE.md).
+// A diamond spinner runs while the page loads; then the name rises from the bottom edge, one diamond lands as the
+// dot of each "i", and the whole screen slides up to reveal the site.
 interface Props {
-  initials: string;
+  name: string;
 }
-const { initials } = Astro.props;
+const { name } = Astro.props;
+const words = name.split(" ");
 ---
 
 <div class="loader" data-loader role="status" aria-label="Loading">
-  <div class="loader-box" aria-hidden="true">
-    <span class="loader-logo">{initials}</span>
-    <p class="loader-word"><span data-loader-word></span><span class="caret"></span></p>
-    <div class="loader-meter">
-      <span class="rail"><i data-loader-fill></i></span>
-      <span class="pct"><span data-loader-pct>0</span>%</span>
-    </div>
+  <div class="spinner" aria-hidden="true">
+    <span class="diamond"></span><span class="diamond"></span><span class="diamond"></span><span class="diamond"></span>
   </div>
+  <p class="loader-name" aria-hidden="true">
+    {words.map((word) => (
+      <span class="mask">
+        <span class="word">
+          {[...word].map((ch) => (ch === "i" ? <span class="i">ı<span class="dot-mark" data-dot /></span> : ch))}
+        </span>
+      </span>
+    ))}
+  </p>
 </div>
 
 <script>
-  // Boot screen: types "booting", fills the bar while the page loads, then swaps to "ready" and fades out.
   const loader = document.querySelector<HTMLElement>("[data-loader]");
   if (loader && document.documentElement.classList.contains("loading")) {
-    const word = loader.querySelector<HTMLElement>("[data-loader-word]")!;
-    const fill = loader.querySelector<HTMLElement>("[data-loader-fill]")!;
-    const pct = loader.querySelector<HTMLElement>("[data-loader-pct]")!;
+    const spinner = loader.querySelector<HTMLElement>(".spinner")!;
+    const words = [...loader.querySelectorAll<HTMLElement>(".word")];
+    const marks = [...loader.querySelectorAll<HTMLElement>("[data-dot]")];
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const duration = reduce ? 400 : 3500; // the shortest the boot runs
+    const MIN = reduce ? 0 : 1200; // the shortest the spinner runs
     const MAX = 10000; // on a slow connection, open the site anyway after this
     const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const ease = "cubic-bezier(0.65, 0, 0.35, 1)";
 
-    // The bar can't pass 90% until the fonts and the whole page have loaded.
-    let loaded = false;
     const pageLoad = document.readyState === "complete" ? null : new Promise((r) => addEventListener("load", r, { once: true }));
-    Promise.all([document.fonts?.ready, pageLoad]).then(() => { loaded = true; });
+    const nameFont = document.fonts?.load('1em "Instrument Serif"').catch(() => {});
+    const ready = Promise.all([pageLoad, nameFont, wait(MIN)]);
 
-    // Letters go in at 115ms and come out at 55ms; the caret holds still while typing and blinks between.
-    const type = async (text: string) => {
-      if (reduce) { word.textContent = text; return; }
-      word.parentElement!.classList.add("typing");
-      for (let i = 1; i <= text.length; i++) { word.textContent = text.slice(0, i); await wait(115); }
-      word.parentElement!.classList.remove("typing");
-    };
-    const erase = async () => {
-      if (reduce) return;
-      word.parentElement!.classList.add("typing");
-      while (word.textContent) { word.textContent = word.textContent.slice(0, -1); await wait(55); }
-    };
-    const typed = wait(reduce ? 0 : 250).then(() => type("booting"));
-
-    const finish = async () => {
-      await typed;
-      await erase();
-      await type("ready");
-      await wait(reduce ? 60 : 350);
-      loader.classList.add("done");
-      loader.addEventListener("transitionend", () => {
-        document.documentElement.classList.remove("loading");
-        loader.remove();
-      }, { once: true });
+    const finish = () => {
+      document.documentElement.classList.remove("loading");
+      loader.remove();
     };
 
-    let start: number | null = null;
-    const tick = (now: number) => {
-      start ??= now;
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - (1 - t) ** 2;
-      const share = loaded || now - start >= MAX ? eased : Math.min(eased, 0.9);
-      pct.textContent = String(Math.round(share * 100));
-      fill.style.transform = `scaleX(${share})`;
-      if (share < 1) requestAnimationFrame(tick);
-      else finish();
+    const reveal = async () => {
+      if (reduce) {
+        spinner.remove();
+        words.forEach((w) => (w.style.transform = "none"));
+        await wait(700);
+        await loader.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: "forwards" }).finished;
+        return finish();
+      }
+
+      // Where each "i" dot sits once the words have risen.
+      words.forEach((w) => (w.style.transform = "none"));
+      const targets = marks.map((m) => m.getBoundingClientRect());
+      words.forEach((w) => (w.style.transform = ""));
+
+      // Lift the diamonds out of the spinner at their current spots, then send each to a dot or out and away.
+      const diamonds = [...spinner.querySelectorAll<HTMLElement>(".diamond")].map((d) => {
+        const r = d.getBoundingClientRect();
+        const free = document.createElement("span");
+        free.className = "diamond";
+        free.style.left = `${r.left + r.width / 2 - 4.5}px`;
+        free.style.top = `${r.top + r.height / 2 - 4.5}px`;
+        loader.append(free);
+        return { el: free, x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      });
+      spinner.remove();
+
+      const lineY = targets[0] ? targets[0].top + targets[0].height / 2 : innerHeight * 0.7;
+      const flights = diamonds.map(({ el, x, y }, k) => {
+        const t = targets[k];
+        const toX = t ? t.left + t.width / 2 : innerWidth * (0.2 + 0.2 * k);
+        const toY = t ? t.top + t.height / 2 : lineY;
+        const scale = t ? t.width / 9 : 1;
+        return el.animate(
+          [
+            { transform: "translate(0, 0) rotate(45deg) scale(1)", opacity: 1 },
+            { transform: `translate(${toX - x}px, ${toY - y}px) rotate(45deg) scale(${scale})`, opacity: t ? 1 : 0 },
+          ],
+          { duration: 800, easing: ease, fill: "forwards" },
+        ).finished;
+      });
+
+      // The words rise from below their baseline, the second a beat after the first.
+      const rises = words.map((w, i) =>
+        w.animate([{ transform: "translateY(110%)" }, { transform: "translateY(0)" }], {
+          duration: 1000, delay: 250 + i * 120, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "forwards",
+        }).finished,
+      );
+
+      await Promise.all([...flights, ...rises]);
+      await wait(700);
+
+      // The whole screen slides up and away.
+      await loader.animate([{ transform: "translateY(0)" }, { transform: "translateY(-100%)" }], {
+        duration: 1000, easing: "cubic-bezier(0.76, 0, 0.24, 1)", fill: "forwards",
+      }).finished;
+      finish();
     };
-    requestAnimationFrame(tick);
+
+    Promise.race([ready, wait(MAX)]).then(reveal);
   }
 </script>

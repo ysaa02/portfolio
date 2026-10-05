@@ -14,7 +14,7 @@ Astro 7 static site with TypeScript (strict) and plain CSS. No UI framework, no 
 
 The current design and interactions are final. Reviews and QA report findings; they don't apply them. Never redesign, restyle or remove existing UI as a side effect of other work.
 
-In particular, the **boot loading screen** (`src/components/Loader.astro`, the `loading` line in `Base.astro`'s head script, and the loader styles in `global.css`) is off limits: its design, animation, typing speeds, 3.5s minimum, 10s cap, position, behavior and appearance stay exactly as they are. Only change it when the owner names it in the request.
+In particular, the **boot loading screen** (`src/components/Loader.astro`, the `loading` line in `Base.astro`'s head script, and the loader styles in `global.css`) is off limits: its design (diamond spinner, "Elaisa Laguerta" rising in Instrument Serif with a diamond i-dot, slide-up exit), animation, timings (1.2s minimum spinner, 10s cap), position, behavior and appearance stay exactly as they are. Only change it when the owner names it in the request.
 
 ## Commits — Conventional Commits
 
