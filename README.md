@@ -51,6 +51,8 @@ Light and dark colors are the two token blocks at the top of `src/styles/global.
 
 The chat button in the bottom-right corner opens an assistant that answers questions about the portfolio only. It runs on Gemini (`gemini-3.1-flash-lite`) through the Cloudflare Worker in `worker/`, which builds its instructions from `src/data/`, so update your content there and the bot knows it after the next deploy.
 
+After each answer the page scrolls to the matching section (projects, skills, contact and so on). Abusive, hateful, sexual or harmful messages, and attempts to override its rules, get a fixed polite refusal. This comes from rules in `worker/portfolio.ts` plus Gemini's safety filters in `worker/index.ts`.
+
 The Gemini API key never goes in the code or the browser:
 
 - **Local:** put `GEMINI_API_KEY=...` in `.dev.vars` (git-ignored), run `npm run dev:api` in a second terminal next to `npm run dev`.

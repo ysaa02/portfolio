@@ -1,6 +1,6 @@
 // Cloudflare Worker: serves the static site and answers /api/chat with Gemini.
 // The Gemini key is a Worker secret (GEMINI_API_KEY); it never reaches the browser.
-import { buildSystemPrompt } from "./portfolio";
+import { ABUSE_REPLY, SECTIONS, buildSystemPrompt } from "./portfolio";
 
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -10,10 +10,20 @@ interface Env {
 }
 
 type Message = { role: "user" | "assistant"; content: string };
+type Reply = { reply: string; section?: string };
 
 const MAX_MESSAGES = 12; // conversation turns sent to the model
 const MAX_CHARS = 500; // per message
 const SYSTEM_PROMPT = buildSystemPrompt();
+// Gemini's own filters. Medium, because "low" also blocked plain questions like "How can I contact her?".
+// A blocked prompt or reply gets the fixed ABUSE_REPLY.
+const SAFETY_SETTINGS = [
+  "HARM_CATEGORY_HARASSMENT",
+  "HARM_CATEGORY_HATE_SPEECH",
+  "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+  "HARM_CATEGORY_DANGEROUS_CONTENT",
+].map((category) => ({ category, threshold: "BLOCK_MEDIUM_AND_ABOVE" }));
+const SECTION_TAG = /\[section:\s*([a-z-]+)\s*\]/gi;
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -41,7 +51,15 @@ function parseMessages(body: unknown): Message[] | null {
   return messages.length && messages[messages.length - 1].role === "user" ? messages : null;
 }
 
-async function askGemini(env: Env, messages: Message[]): Promise<string> {
+// The model ends each reply with "[section: id]"; strip it and keep the id only if it names a real section.
+function splitSection(text: string): Reply {
+  const ids = [...text.matchAll(SECTION_TAG)].map((m) => m[1].toLowerCase());
+  const reply = text.replace(SECTION_TAG, "").trim();
+  const section = ids.at(-1);
+  return section && SECTIONS.includes(section) ? { reply, section } : { reply };
+}
+
+async function askGemini(env: Env, messages: Message[]): Promise<Reply> {
   const request = () =>
     fetch(`https://generativelanguage.googleapis.com/v1beta/models/${env.GEMINI_MODEL}:generateContent`, {
       method: "POST",
@@ -49,6 +67,7 @@ async function askGemini(env: Env, messages: Message[]): Promise<string> {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+        safetySettings: SAFETY_SETTINGS,
         generationConfig: { maxOutputTokens: 400 },
       }),
       signal: AbortSignal.timeout(20000),
@@ -61,14 +80,20 @@ async function askGemini(env: Env, messages: Message[]): Promise<string> {
   }
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[];
+    promptFeedback?: { blockReason?: string };
+    candidates?: { finishReason?: string; content?: { parts?: { text?: string; thought?: boolean }[] } }[];
   };
-  const text = (data.candidates?.[0]?.content?.parts ?? [])
+  const candidate = data.candidates?.[0];
+  if (data.promptFeedback?.blockReason || candidate?.finishReason === "SAFETY") return { reply: ABUSE_REPLY };
+  const text = (candidate?.content?.parts ?? [])
     .filter((p) => !p.thought && p.text)
     .map((p) => p.text)
     .join("")
     .trim();
-  return text || "Sorry, I couldn't come up with an answer to that. Try asking about my projects, skills or how to contact me.";
+  const answer = splitSection(text);
+  return answer.reply
+    ? answer
+    : { reply: "Sorry, I couldn't come up with an answer to that. Try asking about my projects, skills or how to contact me." };
 }
 
 async function handleChat(request: Request, env: Env): Promise<Response> {
@@ -91,7 +116,7 @@ async function handleChat(request: Request, env: Env): Promise<Response> {
   if (!messages) return json({ error: "Invalid request." }, 400);
 
   try {
-    return json({ reply: await askGemini(env, messages) });
+    return json(await askGemini(env, messages));
   } catch (err) {
     console.error(err);
     return json({ error: "The assistant is unavailable right now. Please try again later." }, 502);

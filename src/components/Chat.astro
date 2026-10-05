@@ -78,11 +78,16 @@ const firstName = owner.split(" ")[0];
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ messages: history }),
       });
-      const data = (await res.json().catch(() => ({}))) as { reply?: string; error?: string };
+      const data = (await res.json().catch(() => ({}))) as { reply?: string; section?: string; error?: string };
       if (!res.ok || !data.reply) throw new Error(data.error || "Something went wrong. Please try again.");
       pending.className = "msg bot";
       pending.textContent = data.reply;
       history.push({ role: "assistant", content: data.reply });
+      // Bring the section the answer is about into view behind the chat panel.
+      if (data.section) {
+        const smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+        document.getElementById(data.section)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+      }
     } catch (err) {
       history.pop(); // let the visitor ask the same question again
       pending.className = "msg bot error";
