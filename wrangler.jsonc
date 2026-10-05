@@ -23,5 +23,14 @@
       "simple": { "limit": 10, "period": 60 }
     }
   ],
+  // Anonymous log of visitor questions (no IP, no names). Read it with `npm run questions`.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "portfolio-questions",
+      "database_id": "9b1d7217-162a-4dcf-a113-4c5da966154b",
+      "migrations_dir": "worker/migrations"
+    }
+  ],
   "observability": { "enabled": true }
 }

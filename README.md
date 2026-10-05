@@ -51,7 +51,7 @@ Light and dark colors are the two token blocks at the top of `src/styles/global.
 
 The chat button in the bottom-right corner opens an assistant that answers questions about the portfolio only. It runs on Gemini (`gemini-3.1-flash-lite`) through the Cloudflare Worker in `worker/`, which builds its instructions from `src/data/`, so update your content there and the bot knows it after the next deploy.
 
-After each answer the page scrolls to the matching section (projects, skills, contact and so on). Abusive, hateful, sexual or harmful messages, and attempts to override its rules, get a fixed polite refusal. This comes from rules in `worker/portfolio.ts` plus Gemini's safety filters in `worker/index.ts`.
+Answers stream in word by word. After each one the page scrolls to the matching section (projects, skills, contact and so on), and a `→ section` button under the reply jumps back there; contact answers also get "Email" and "Copy email" buttons. The chat opens with starter questions (`chatSuggestions` in `profile.ts`), has a `clear` button, and the hero's "ask me anything" box sends its question straight to the chat. Abusive, hateful, sexual or harmful messages, and attempts to override its rules, get a fixed polite refusal. This comes from rules in `worker/portfolio.ts` plus Gemini's safety filters in `worker/index.ts`.
 
 The Gemini API key never goes in the code or the browser:
 
@@ -59,6 +59,8 @@ The Gemini API key never goes in the code or the browser:
 - **Live site:** `npx wrangler@4 secret put GEMINI_API_KEY` once; it stays across deploys.
 
 Safeguards: same-site requests only, 10 messages per minute per visitor, 500 characters per message, short answers, and off-topic questions are refused.
+
+**Question log.** Each question visitors ask is saved to a Cloudflare D1 database (`portfolio-questions`) with the time and the section it was about. No IP address or name is kept, emails and phone numbers are masked, and refused messages aren't saved. See the latest 50 with `npm run questions`. The table is created by `worker/migrations/`: run `npm run db:migrate` once before the first deploy (`npm run dev:api` sets up the local copy itself).
 
 ## Testing
 

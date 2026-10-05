@@ -8,8 +8,10 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "dev:api": "astro build && npx wrangler@4 dev --ip 127.0.0.1 --port 8787",
-    "deploy": "npm run build && npx wrangler@4 deploy"
+    "dev:api": "astro build && npx wrangler@4 d1 migrations apply portfolio-questions --local && npx wrangler@4 dev --ip 127.0.0.1 --port 8787",
+    "deploy": "npm run build && npx wrangler@4 deploy",
+    "db:migrate": "npx wrangler@4 d1 migrations apply portfolio-questions --remote",
+    "questions": "npx wrangler@4 d1 execute portfolio-questions --remote --command \"SELECT asked_at, section, question FROM questions ORDER BY id DESC LIMIT 50\""
   },
   "dependencies": {
     "astro": "^7.3.5"

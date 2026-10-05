@@ -8,6 +8,8 @@ export const profile = {
   education: "[Degree] · [School] · [Honor]",
   description: "Elaisa Laguerta — [ROLE]. Placeholder portfolio.",
   email: "lgrta15@gmail.com",
+  // Tappable starter questions shown when the chat opens.
+  chatSuggestions: ["What are her skills?", "What is she studying?", "How can I contact her?"],
   links: [
     { label: "github", icon: "github" as const, url: "#" },
     { label: "linkedin", icon: "linkedin" as const, url: "#" },

@@ -1,6 +1,9 @@
 ---
 // Portfolio chatbot. Talks only to /api/chat (worker/index.ts); the Gemini key never reaches the browser.
+// Replies stream in; under each one, buttons jump to the matching section and, for contact questions, email her.
+// The hero's ask box opens the chat through a "chat:ask" event.
 import Icon from "./Icon.astro";
+import { profile } from "../data/profile";
 
 interface Props {
   owner: string;
@@ -9,18 +12,25 @@ const { owner } = Astro.props;
 const firstName = owner.split(" ")[0];
 ---
 
-<div class="chat" data-chat>
+<div class="chat" data-chat data-email={profile.email} data-name={firstName}>
   <div class="chat-panel" id="chat-panel" role="region" aria-label={`Chat about ${firstName}'s portfolio`} hidden>
     <header class="chat-head">
       <span><span class="prompt">~/</span>ask-{firstName.toLowerCase()}</span>
-      <button class="chat-close" type="button" data-chat-close aria-label="Close chat"><Icon name="close" /></button>
+      <span class="chat-head-actions">
+        <button class="chat-clear" type="button" data-chat-clear>clear</button>
+        <button class="chat-close" type="button" data-chat-close aria-label="Close chat"><Icon name="close" /></button>
+      </span>
     </header>
-    <ol class="chat-log" data-chat-log aria-live="polite">
+    <ol class="chat-log" data-chat-log aria-live="polite"></ol>
+    <template data-chat-intro>
       <li class="msg bot">Hi! Ask me about {firstName}'s projects, skills, experience or how to get in touch.</li>
-    </ol>
+      <li class="chips" data-starters>
+        {profile.chatSuggestions.map((q) => <button type="button" class="chip" data-ask>{q}</button>)}
+      </li>
+    </template>
     <form class="chat-form" data-chat-form>
       <label class="sr-only" for="chat-input">Your question</label>
-      <input id="chat-input" name="q" type="text" maxlength="500" autocomplete="off" placeholder="$ ask a question" required />
+      <input id="chat-input" name="q" type="text" maxlength="500" autocomplete="off" placeholder="ask a question" required />
       <button class="btn" type="submit" aria-label="Send"><Icon name="send" /></button>
     </form>
   </div>
@@ -31,15 +41,23 @@ const firstName = owner.split(" ")[0];
 
 <script>
   type Message = { role: "user" | "assistant"; content: string };
+  // One line per event from the worker; see worker/index.ts.
+  type Event = { text?: string; replace?: string; done?: boolean; section?: string; error?: string };
+
+  const FAILED = "Something went wrong. Please try again.";
+  const LABELS: Record<string, string> = { top: "intro" };
 
   const root = document.querySelector<HTMLElement>("[data-chat]")!;
   const panel = root.querySelector<HTMLElement>(".chat-panel")!;
   const toggle = root.querySelector<HTMLButtonElement>("[data-chat-toggle]")!;
   const log = root.querySelector<HTMLOListElement>("[data-chat-log]")!;
+  const intro = root.querySelector<HTMLTemplateElement>("[data-chat-intro]")!;
   const form = root.querySelector<HTMLFormElement>("[data-chat-form]")!;
   const input = form.querySelector<HTMLInputElement>("input")!;
   const send = form.querySelector<HTMLButtonElement>("button")!;
-  const history: Message[] = [];
+  const { email = "", name = "" } = root.dataset;
+  let history: Message[] = [];
+  let request: AbortController | null = null;
 
   const setOpen = (open: boolean) => {
     panel.hidden = !open;
@@ -52,50 +70,142 @@ const firstName = owner.split(" ")[0];
   root.querySelector("[data-chat-close]")!.addEventListener("click", () => setOpen(false));
   root.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) setOpen(false); });
 
+  const toBottom = () => (log.scrollTop = log.scrollHeight);
   // Text only: replies are inserted with textContent, never as HTML.
   const add = (cls: string, text: string) => {
     const li = document.createElement("li");
     li.className = `msg ${cls}`;
     li.textContent = text;
     log.append(li);
-    log.scrollTop = log.scrollHeight;
+    toBottom();
     return li;
   };
+  const button = (text: string, data: Record<string, string>) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "chip", textContent: text });
+    Object.assign(b.dataset, data);
+    return b;
+  };
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const question = input.value.trim();
-    if (!question) return;
-    input.value = "";
+  // Buttons under a reply: jump to its section; for contact questions, email her or copy the address.
+  const addActions = (section: string) => {
+    const li = document.createElement("li");
+    li.className = "chips";
+    if (section === "contact" && email) {
+      const mail = Object.assign(document.createElement("a"), { className: "chip", href: `mailto:${email}`, textContent: `Email ${name}` });
+      li.append(mail, button("Copy email", { copy: email }));
+    }
+    li.append(button(`→ ${LABELS[section] ?? section}`, { go: section }));
+    log.append(li);
+    toBottom();
+  };
+
+  const scrollToSection = (id: string) => {
+    const smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById(id)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+  };
+
+  const reset = () => {
+    request?.abort();
+    history = [];
+    log.replaceChildren(intro.content.cloneNode(true));
+  };
+  reset();
+  root.querySelector("[data-chat-clear]")!.addEventListener("click", () => { reset(); input.focus(); });
+
+  async function ask(question: string) {
+    if (request || !question) return;
+    log.querySelector("[data-starters]")?.remove();
     add("user", question);
     history.push({ role: "user", content: question });
     const pending = add("bot pending", "thinking...");
+    const show = (text: string) => { pending.className = "msg bot"; pending.textContent = text; toBottom(); };
     input.disabled = send.disabled = true;
+    log.setAttribute("aria-busy", "true"); // screen readers read the reply once, when it's complete
+    const current = (request = new AbortController());
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ messages: history }),
+        signal: current.signal,
       });
-      const data = (await res.json().catch(() => ({}))) as { reply?: string; section?: string; error?: string };
-      if (!res.ok || !data.reply) throw new Error(data.error || "Something went wrong. Please try again.");
-      pending.className = "msg bot";
-      pending.textContent = data.reply;
-      history.push({ role: "assistant", content: data.reply });
-      // Bring the section the answer is about into view behind the chat panel.
-      if (data.section) {
-        const smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches;
-        document.getElementById(data.section)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+      if (!res.ok || !res.body) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error || FAILED);
+      }
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let text = "", buffer = "", finished = false, section: string | undefined;
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += value;
+        const lines = buffer.split("\n");
+        buffer = lines.pop()!;
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = JSON.parse(line) as Event;
+          if (event.error) throw new Error(event.error);
+          if (event.text) show((text += event.text).trimStart());
+          if (event.replace) show((text = event.replace));
+          if (event.done) { finished = true; section = event.section; }
+        }
+      }
+      if (!finished || !text.trim()) throw new Error("The answer was cut off. Please try again.");
+      show(text.trim());
+      history.push({ role: "assistant", content: text.trim() });
+      if (section) {
+        addActions(section);
+        scrollToSection(section);
       }
     } catch (err) {
+      if (current.signal.aborted) return; // cleared: the log is already reset
       history.pop(); // let the visitor ask the same question again
       pending.className = "msg bot error";
-      pending.textContent = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      pending.textContent = err instanceof Error && err.message ? err.message : FAILED;
     } finally {
+      if (request === current) request = null;
+      log.removeAttribute("aria-busy");
       input.disabled = send.disabled = false;
-      input.focus();
-      log.scrollTop = log.scrollHeight;
+      if (!panel.hidden) input.focus();
+      toBottom();
     }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const question = input.value.trim();
+    input.value = "";
+    ask(question);
+  });
+
+  log.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>("button");
+    if (!b) return;
+    if (b.dataset.ask !== undefined) ask(b.textContent!.trim());
+    else if (b.dataset.go) scrollToSection(b.dataset.go);
+    else if (b.dataset.copy) {
+      const address = b.dataset.copy;
+      const fallback = () => (b.textContent = address); // no clipboard access: show the address to copy by hand
+      if (!navigator.clipboard) return fallback();
+      navigator.clipboard.writeText(address).then(() => {
+        b.textContent = "Copied!";
+        setTimeout(() => (b.textContent = "Copy email"), 2000);
+      }, fallback);
+    }
+  });
+
+  // The hero's ask box: a click opens the chat (keeping any draft), a question opens it and asks.
+  document.addEventListener("chat:open", (e) => {
+    const draft = (e as CustomEvent<string>).detail ?? "";
+    if (panel.hidden) setOpen(true);
+    if (draft) input.value = draft;
+    input.focus();
+  });
+  document.addEventListener("chat:ask", (e) => {
+    const question = (e as CustomEvent<string>).detail?.trim();
+    if (!question) return;
+    if (panel.hidden) setOpen(true);
+    ask(question);
   });
 </script>

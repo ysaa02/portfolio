@@ -222,6 +222,18 @@ blockquote footer { color: var(--muted); font-size: 14px; margin-top: 16px; }
 .chat-form input:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
 .chat-form .btn { border: 0; font: inherit; font-size: 14px; cursor: pointer; padding: 10px 14px; }
 .chat-form :disabled { opacity: 0.6; cursor: wait; }
+.chat-head-actions { display: flex; align-items: center; gap: 12px; }
+.chat-clear { background: none; border: 0; padding: 4px 0; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; }
+.chat-clear:hover { color: var(--ink); }
+/* Starter questions and the buttons under a reply. */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; min-height: 32px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px;
+  background: none; color: var(--ink); font: inherit; font-size: 13px; text-decoration: none; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.chip:hover { border-color: var(--ink); }
+.chip:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 /* Icons: sized to the text around them, colored by it. */
 .icon { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex-shrink: 0; }
