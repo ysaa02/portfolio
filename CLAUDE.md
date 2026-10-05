@@ -2,13 +2,19 @@
 
 ## Stack
 
-Static site: `index.html`, `assets/styles.css`, `assets/main.js`. Plain HTML/CSS/JS, no framework, no build step, no backend, no npm dependencies. Keep it that way unless the owner asks otherwise. Colors are tokens at the top of `styles.css`; dark mode is `:root[data-theme="dark"]`.
+Astro 7 static site with TypeScript (strict) and plain CSS. No UI framework, no Tailwind, no backend. Don't add dependencies without the owner's approval.
+
+- Page: `src/pages/index.astro`; layout and head scripts: `src/layouts/Base.astro`; one component per section in `src/components/`.
+- Content: `src/data/` (`profile.ts` plus JSON lists validated by `src/content.config.ts`). Edit content there, not in components.
+- Styles: `src/styles/global.css`. Colors are tokens at the top; dark mode is `:root[data-theme="dark"]`.
+- Commands: `npm run dev` (localhost:4321), `npm run build` (type check + build to `dist/`), `npm run preview`.
+- Never push without the owner previewing locally first.
 
 ## Protected UI — do not change without an explicit request
 
 The current design and interactions are final. Reviews and QA report findings; they don't apply them. Never redesign, restyle or remove existing UI as a side effect of other work.
 
-In particular, the **boot loading screen** (`.loader` in `index.html`, the loader styles in `styles.css`, the boot-screen block in `main.js`) is off limits: its design, animation, typing speeds, 3.5s minimum, 10s cap, position, behavior and appearance stay exactly as they are. Only change it when the owner names it in the request.
+In particular, the **boot loading screen** (`src/components/Loader.astro`, the `loading` line in `Base.astro`'s head script, and the loader styles in `global.css`) is off limits: its design, animation, typing speeds, 3.5s minimum, 10s cap, position, behavior and appearance stay exactly as they are. Only change it when the owner names it in the request.
 
 ## Commits — Conventional Commits
 

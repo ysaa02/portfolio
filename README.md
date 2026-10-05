@@ -1,15 +1,63 @@
 # Portfolio
 
-A placeholder portfolio site with a terminal-style look. It's plain HTML, CSS and JS, so there's no build step.
+A personal portfolio with a terminal-style look, built with [Astro](https://astro.build). It builds to static HTML, CSS and a little JavaScript, so it can be hosted anywhere (Cloudflare Pages recommended).
 
 ## Run locally
 
-Open `index.html` in a browser, or serve the folder:
+Requires Node.js 22 or newer.
 
 ```sh
-npx serve .
+npm install
+npm run dev        # http://localhost:4321, reloads as you edit
 ```
 
-## Editing
+To check the production build:
 
-Replace each `[PLACEHOLDER]` in `index.html` with your own content. The colors are tokens at the top of `assets/styles.css`.
+```sh
+npm run build      # type-checks, then writes the site to dist/
+npm run preview    # serves dist/ at http://localhost:4321
+```
+
+## Editing content
+
+All text lives in `src/data/`. Replace each `[PLACEHOLDER]`:
+
+| File | What it holds |
+|---|---|
+| `profile.ts` | Name, handle, loader initials, role, intro, education, email, social links |
+| `projects.json` | Project cards: title, description, tags, link |
+| `skills.json` | Skill tiles |
+| `awards.json`, `certifications.json` | Numbered cards: title, issuer, year |
+| `testimonials.json` | Quotes |
+
+To add a card, add an entry with a unique `id` and the next `order` number. `npm run build` fails with a clear message if a field is missing or has the wrong type.
+
+## Structure
+
+```
+src/
+  pages/index.astro        the page, assembled from components
+  layouts/Base.astro       <head>, theme script, boot screen
+  components/              one component per section (Nav, Hero, Projects, ...)
+  data/                    content (see above)
+  content.config.ts        content schemas
+  styles/global.css        all styles; color tokens at the top
+```
+
+Light and dark colors are the two token blocks at the top of `src/styles/global.css`.
+
+## Testing
+
+Run `npm run build` before committing: it fails on type errors and invalid content. In Claude Code, `/site-qa` runs browser checks (loader, theme, carousel, responsive layouts, Lighthouse).
+
+## Deploy (Cloudflare Pages)
+
+Connect the GitHub repo in Cloudflare Pages with build command `npm run build` and output directory `dist`.
+
+## Commits
+
+Conventional Commits, enforced by `.githooks/commit-msg`. Enable it once per clone:
+
+```sh
+git config core.hooksPath .githooks
+```
