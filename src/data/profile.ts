@@ -7,7 +7,7 @@ export const profile = {
   intro: "[A one or two sentence intro about what you build and who you build it for.]",
   education: "[Degree] · [School] · [Honor]",
   description: "[YOUR NAME] — [ROLE]. Placeholder portfolio.",
-  email: "you@example.com",
+  email: "lgrta15@gmail.com",
   links: [
     { label: "github", url: "#" },
     { label: "linkedin", url: "#" },
