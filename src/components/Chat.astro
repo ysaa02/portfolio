@@ -1,0 +1,92 @@
+---
+// Portfolio chatbot. Talks only to /api/chat (worker/index.ts); the Gemini key never reaches the browser.
+interface Props {
+  owner: string;
+}
+const { owner } = Astro.props;
+const firstName = owner.split(" ")[0];
+---
+
+<div class="chat" data-chat>
+  <div class="chat-panel" id="chat-panel" role="region" aria-label={`Chat about ${firstName}'s portfolio`} hidden>
+    <header class="chat-head">
+      <span><span class="prompt">~/</span>ask-{firstName.toLowerCase()}</span>
+      <button class="chat-close" type="button" data-chat-close aria-label="Close chat">[ x ]</button>
+    </header>
+    <ol class="chat-log" data-chat-log aria-live="polite">
+      <li class="msg bot">Hi! Ask me about {firstName}'s projects, skills, experience or how to get in touch.</li>
+    </ol>
+    <form class="chat-form" data-chat-form>
+      <label class="sr-only" for="chat-input">Your question</label>
+      <input id="chat-input" name="q" type="text" maxlength="500" autocomplete="off" placeholder="$ ask a question" required />
+      <button class="btn" type="submit">[ send ]</button>
+    </form>
+  </div>
+  <button class="chat-toggle btn" type="button" data-chat-toggle aria-expanded="false" aria-controls="chat-panel">[ chat ]</button>
+</div>
+
+<script>
+  type Message = { role: "user" | "assistant"; content: string };
+
+  const root = document.querySelector<HTMLElement>("[data-chat]")!;
+  const panel = root.querySelector<HTMLElement>(".chat-panel")!;
+  const toggle = root.querySelector<HTMLButtonElement>("[data-chat-toggle]")!;
+  const log = root.querySelector<HTMLOListElement>("[data-chat-log]")!;
+  const form = root.querySelector<HTMLFormElement>("[data-chat-form]")!;
+  const input = form.querySelector<HTMLInputElement>("input")!;
+  const send = form.querySelector<HTMLButtonElement>("button")!;
+  const history: Message[] = [];
+
+  const setOpen = (open: boolean) => {
+    panel.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.textContent = open ? "[ close ]" : "[ chat ]";
+    if (open) input.focus();
+    else toggle.focus();
+  };
+  toggle.addEventListener("click", () => setOpen(panel.hidden === true));
+  root.querySelector("[data-chat-close]")!.addEventListener("click", () => setOpen(false));
+  root.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) setOpen(false); });
+
+  // Text only: replies are inserted with textContent, never as HTML.
+  const add = (cls: string, text: string) => {
+    const li = document.createElement("li");
+    li.className = `msg ${cls}`;
+    li.textContent = text;
+    log.append(li);
+    log.scrollTop = log.scrollHeight;
+    return li;
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
+    input.value = "";
+    add("user", question);
+    history.push({ role: "user", content: question });
+    const pending = add("bot pending", "thinking...");
+    input.disabled = send.disabled = true;
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ messages: history }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { reply?: string; error?: string };
+      if (!res.ok || !data.reply) throw new Error(data.error || "Something went wrong. Please try again.");
+      pending.className = "msg bot";
+      pending.textContent = data.reply;
+      history.push({ role: "assistant", content: data.reply });
+    } catch (err) {
+      history.pop(); // let the visitor ask the same question again
+      pending.className = "msg bot error";
+      pending.textContent = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+    } finally {
+      input.disabled = send.disabled = false;
+      input.focus();
+      log.scrollTop = log.scrollHeight;
+    }
+  });
+</script>

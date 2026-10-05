@@ -117,3 +117,30 @@ blockquote footer { color: var(--muted); font-size: 14px; margin-top: 16px; }
   .hero { grid-template-columns: 1fr; min-height: auto; }
   .portrait { max-width: 280px; }
 }
+
+/* Chatbot */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.chat { position: fixed; right: 16px; bottom: 16px; z-index: 20; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+.chat-toggle { border: 1px solid var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+.chat-panel {
+  display: flex; flex-direction: column; width: min(360px, calc(100vw - 32px)); height: min(480px, calc(100dvh - 96px));
+  background: var(--card); border: 1px solid var(--line); box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+}
+.chat-panel[hidden] { display: none; }
+.chat-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 500; }
+.chat-close { background: none; border: 0; color: var(--muted); font: inherit; cursor: pointer; }
+.chat-close:hover { color: var(--ink); }
+.chat-log { list-style: none; margin: 0; padding: 14px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+.msg { max-width: 88%; padding: 8px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.bot { align-self: flex-start; background: var(--paper); border: 1px solid var(--line); }
+.msg.user { align-self: flex-end; background: var(--ink); color: var(--paper); }
+.msg.pending { color: var(--muted); }
+.msg.error { color: var(--muted); border-style: dashed; }
+.chat-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); }
+.chat-form input {
+  flex: 1; min-width: 0; padding: 10px; font: inherit; font-size: 14px;
+  background: var(--paper); color: var(--ink); border: 1px solid var(--line);
+}
+.chat-form input:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+.chat-form .btn { border: 0; font: inherit; font-size: 14px; cursor: pointer; padding: 10px 14px; }
+.chat-form :disabled { opacity: 0.6; cursor: wait; }

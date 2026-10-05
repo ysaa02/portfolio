@@ -7,6 +7,7 @@ import Skills from "../components/Skills.astro";
 import CardList from "../components/CardList.astro";
 import Testimonials from "../components/Testimonials.astro";
 import Contact from "../components/Contact.astro";
+import Chat from "../components/Chat.astro";
 import { profile } from "../data/profile";
 ---
 
@@ -21,4 +22,5 @@ import { profile } from "../data/profile";
     <Testimonials />
   </main>
   <Contact />
+  <Chat owner={profile.loaderName} />
 </Base>
