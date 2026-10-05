@@ -2,12 +2,13 @@
 
 ## Stack
 
-Astro 7 static site with TypeScript (strict) and plain CSS. No UI framework, no Tailwind, no backend. Don't add dependencies without the owner's approval.
+Astro 7 static site with TypeScript (strict) and plain CSS, served by a Cloudflare Worker (`worker/`) that also handles `/api/chat` (Gemini chatbot). No UI framework, no Tailwind. Don't add dependencies without the owner's approval.
 
 - Page: `src/pages/index.astro`; layout and head scripts: `src/layouts/Base.astro`; one component per section in `src/components/`.
 - Content: `src/data/` (`profile.ts` plus JSON lists validated by `src/content.config.ts`). Edit content there, not in components.
 - Styles: `src/styles/global.css`. Colors are tokens at the top; dark mode is `:root[data-theme="dark"]`.
 - Commands: `npm run dev` (localhost:4321), `npm run build` (type check + build to `dist/`), `npm run preview`.
+- Never put the Gemini key (or any secret) in code, `src/`, `dist/` or chat. It lives in `.dev.vars` locally and as a Worker secret in production.
 - Never push without the owner previewing locally first.
 
 ## Protected UI — do not change without an explicit request

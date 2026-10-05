@@ -40,11 +40,23 @@ src/
   layouts/Base.astro       <head>, theme script, boot screen
   components/              one component per section (Nav, Hero, Projects, ...)
   data/                    content (see above)
+worker/                    Cloudflare Worker: serves the site and the /api/chat endpoint
   content.config.ts        content schemas
   styles/global.css        all styles; color tokens at the top
 ```
 
 Light and dark colors are the two token blocks at the top of `src/styles/global.css`.
+
+## Chatbot
+
+The `[ chat ]` button opens an assistant that answers questions about the portfolio only. It runs on Gemini (`gemini-3.1-flash-lite`) through the Cloudflare Worker in `worker/`, which builds its instructions from `src/data/`, so update your content there and the bot knows it after the next deploy.
+
+The Gemini API key never goes in the code or the browser:
+
+- **Local:** put `GEMINI_API_KEY=...` in `.dev.vars` (git-ignored), run `npm run dev:api` in a second terminal next to `npm run dev`.
+- **Live site:** `npx wrangler@4 secret put GEMINI_API_KEY` once; it stays across deploys.
+
+Safeguards: same-site requests only, 10 messages per minute per visitor, 500 characters per message, short answers, and off-topic questions are refused.
 
 ## Testing
 
