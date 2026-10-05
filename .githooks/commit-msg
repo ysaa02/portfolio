@@ -1,0 +1,32 @@
+#!/bin/sh
+# Rejects commit messages that don't follow Conventional Commits (see CLAUDE.md).
+# Enable once per clone: git config core.hooksPath .githooks
+
+subject=$(grep -v '^#' "$1" | head -n 1)
+
+# Let git's own generated messages through.
+case "$subject" in
+  "Merge "*|"Revert \""*|"fixup! "*|"squash! "*|"amend! "*) exit 0 ;;
+esac
+
+types='feat|fix|style|refactor|perf|test|docs|build|ci|chore|revert'
+fail() {
+  echo "commit-msg: $1" >&2
+  echo "  got:      $subject" >&2
+  echo "  expected: type(scope): summary   e.g. fix(nav): close menu on link click" >&2
+  echo "  types:    $types" >&2
+  exit 1
+}
+
+echo "$subject" | grep -Eq "^($types)(\([a-z0-9-]+\))?!?: .+" || fail "not a Conventional Commit"
+[ ${#subject} -le 72 ] || fail "subject is longer than 72 characters"
+
+summary=$(echo "$subject" | sed -E 's/^[^:]+: //' | tr 'A-Z' 'a-z')
+case "$summary" in
+  update|updates|changes|change|final|wip|fix|fixes|stuff|misc|test|tmp|"fix stuff"|"minor changes"|"small fix")
+    fail "summary is too vague; say what changed" ;;
+esac
+case "$summary" in
+  *.) fail "summary ends with a period" ;;
+esac
+exit 0
