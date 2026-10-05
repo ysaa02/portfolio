@@ -64,9 +64,6 @@ a { color: inherit; }
   background: var(--paper); border-bottom: 1px solid var(--line);
 }
 .brand { font-weight: 700; text-decoration: none; }
-.nav nav { display: flex; gap: 20px; flex-wrap: wrap; }
-.nav nav a { text-decoration: none; color: var(--muted); font-size: 14px; }
-.nav nav a:hover { color: var(--ink); }
 .theme { background: none; border: 0; color: var(--ink); font: inherit; cursor: pointer; }
 
 main, .contact { max-width: 1100px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px); }
@@ -113,5 +110,4 @@ blockquote footer { color: var(--muted); font-size: 14px; margin-top: 16px; }
 @media (max-width: 767px) {
   .hero { grid-template-columns: 1fr; min-height: auto; }
   .portrait { max-width: 280px; }
-  .nav nav { display: none; }
 }

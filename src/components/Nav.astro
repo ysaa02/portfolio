@@ -3,22 +3,10 @@ interface Props {
   handle: string;
 }
 const { handle } = Astro.props;
-
-const links = [
-  { href: "#projects", label: "projects" },
-  { href: "#skills", label: "skills" },
-  { href: "#awards", label: "awards" },
-  { href: "#certifications", label: "certs" },
-  { href: "#testimonials", label: "testimonials" },
-  { href: "#contact", label: "contact" },
-];
 ---
 
 <header class="nav">
   <a class="brand" href="#top">~/{handle}</a>
-  <nav>
-    {links.map((link) => <a href={link.href}>{link.label}</a>)}
-  </nav>
   <button class="theme" type="button" data-theme-toggle>[ theme ]</button>
 </header>
 
