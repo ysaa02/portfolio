@@ -1,17 +1,19 @@
 :root {
-  --paper: #eef0f2;
-  --ink: #141a22;
-  --muted: #5b6573;
-  --line: #d3d8de;
+  --paper: #f1f5ef;
+  --ink: #13201a;
+  --muted: #4f6156;
+  --line: #d3ddd2;
   --card: #ffffff;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --paper: #141a22;
-  --ink: #e6e9ee;
-  --muted: #8a94a3;
-  --line: #2a3340;
-  --card: #1b2430;
+  --paper: #0c120e;
+  --ink: #d9e8dc;
+  --muted: #8ea596;
+  --line: #26332b;
+  --card: #141c17;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
