@@ -18,7 +18,9 @@ const projects = defineCollection({
 
 const skills = defineCollection({
   loader: file("src/data/skills.json"),
-  schema: z.object({ order, name: z.string() }),
+  // icon: a file name in src/assets/skills/ (Simple Icons, CC0, or Devicon, MIT). color: fill for one-color logos;
+  // leave it out to keep the logo's own colors, or to use the text color if it has none.
+  schema: z.object({ order, name: z.string(), category: z.string(), icon: z.string(), color: z.string().optional() }),
 });
 
 // Awards and certifications share a shape.

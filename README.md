@@ -26,7 +26,7 @@ All text lives in `src/data/`. Replace each `[PLACEHOLDER]`:
 |---|---|
 | `profile.ts` | Name, handle, loading-screen name, role, intro, education, email, social links |
 | `projects.json` | Project cards: title, description, tags, link |
-| `skills.json` | Skill tiles |
+| `skills.json` | Skills dial: `name`, `category` (one tab per category), `icon` (an SVG file name in `src/assets/skills/`) and optional `color` |
 | `awards.json`, `certifications.json` | Numbered cards: title, issuer, year |
 | `testimonials.json` | Quotes |
 

@@ -1,12 +1,208 @@
 ---
+// Skills: a category list on the left, a spinnable dial of tool logos on the right.
+// The dial is decorative (aria-hidden); each panel also lists its skills for screen readers.
 import { getCollection } from "astro:content";
 import Section from "./Section.astro";
 
-const skills = (await getCollection("skills")).sort((a, b) => a.data.order - b.data.order);
+const skills = (await getCollection("skills")).map(({ data }) => data).sort((a, b) => a.order - b.order);
+const categories = [...new Set(skills.map((s) => s.category))].map((name) => ({
+  name,
+  items: skills.filter((s) => s.category === name),
+}));
+
+// Logo SVGs, inlined so they can take the brand color (or the text color) through CSS.
+const svgs = import.meta.glob<string>("../assets/skills/*.svg", { query: "?raw", import: "default", eager: true });
+const icon = (name: string) =>
+  (svgs[`../assets/skills/${name}.svg`] ?? "")
+    .replace(/<title>.*?<\/title>/, "")
+    .replace(' role="img"', ' aria-hidden="true" focusable="false"');
+
+// Dial geometry, in a 460 x 460 viewBox centred on 230.
+const C = 230;
+const point = (deg: number, r: number) => {
+  const a = (deg * Math.PI) / 180;
+  return [C + r * Math.sin(a), C - r * Math.cos(a)];
+};
+// Enough slots to go round the ring at least 8 times, as a multiple of the item count so the order never breaks.
+const slotsFor = (count: number) => count * Math.ceil(8 / count);
+const ticks = (slots: number) =>
+  Array.from({ length: slots * 8 }, (_, i) => {
+    const deg = (360 / (slots * 8)) * i;
+    const major = i % 8 === 0;
+    const [x1, y1] = point(deg, major ? 146 : 153);
+    const [x2, y2] = point(deg, 163);
+    return { x1, y1, x2, y2, major };
+  });
+const pad = (n: number) => String(n).padStart(2, "0");
 ---
 
 <Section id="skills" title="skills">
-  <ul class="grid">
-    {skills.map(({ data }) => <li>{data.name}</li>)}
-  </ul>
+  <div class="skills">
+    <div class="skill-tabs" role="tablist" aria-label="Skill categories" aria-orientation="vertical" data-skill-tabs>
+      {categories.map(({ name }, i) => (
+        <button type="button" role="tab" id={`skills-tab-${name}`} aria-controls={`skills-${name}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>
+          <span class="caret" aria-hidden="true">▸ </span>{name}
+        </button>
+      ))}
+    </div>
+
+    <div class="skill-panels">
+      {categories.map(({ name, items }, i) => {
+        const slots = slotsFor(items.length);
+        return (
+          <div role="tabpanel" id={`skills-${name}`} aria-labelledby={`skills-tab-${name}`} hidden={i !== 0}>
+            <ul class="sr-only">{items.map((s) => <li>{s.name}</li>)}</ul>
+            <div class="dial-wrap" data-dial aria-hidden="true">
+              <div class="dial">
+                <svg viewBox="0 0 460 460">
+                  {ticks(slots).map((t) => <line class:list={["tick", { major: t.major }]} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />)}
+                </svg>
+                {Array.from({ length: slots }, (_, k) => {
+                  const s = items[k % items.length];
+                  const [x, y] = point((360 / slots) * k, 200);
+                  return (
+                    <span class="dial-logo" data-active={k === 0 ? "" : undefined} style={`left:${(x / 460) * 100}%;top:${(y / 460) * 100}%;${s.color ? `--brand:${s.color}` : ""}`} set:html={icon(s.icon)} />
+                  );
+                })}
+              </div>
+              <svg class="needle" viewBox="0 0 460 460">
+                <line x1="230" y1="142" x2="230" y2="60" />
+                <circle cx="230" cy="60" r="3.5" />
+              </svg>
+              <div class="hub">
+                {items.map((s, k) => (
+                  <div class="hub-item" data-active={k === 0 ? "" : undefined} style={s.color ? `--brand:${s.color}` : undefined}>
+                    <span class="hub-logo" set:html={icon(s.icon)} />
+                    <p class="hub-name">{s.name}</p>
+                    <p class="hub-count">{pad(k + 1)} / {pad(items.length)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      <p class="dial-hint" aria-hidden="true"><span class="dial-hint-icon"></span>drag to spin</p>
+    </div>
+  </div>
 </Section>
+
+<script>
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Category tabs: click or arrow keys.
+  const tablist = document.querySelector<HTMLElement>("[data-skill-tabs]");
+  if (tablist) {
+    const tabs = [...tablist.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (tab: HTMLButtonElement) => {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")!)!.hidden = !on;
+      }
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(tab));
+      tab.addEventListener("keydown", (e) => {
+        const next = { ArrowDown: i + 1, ArrowRight: i + 1, ArrowUp: i - 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        const tab = tabs[(next + tabs.length) % tabs.length];
+        select(tab);
+        tab.focus();
+      });
+    });
+  }
+
+  // Dial: drag or flick to spin, tap a logo to bring it to the pointer, and it turns by itself while on screen.
+  const AUTO_EVERY = 4500; // ms between automatic turns
+  const IDLE_AFTER = 5000; // ms after the visitor's last spin before turning resumes
+  const TAP = 6; // px of movement below which a press counts as a tap
+
+  for (const wrap of document.querySelectorAll<HTMLElement>("[data-dial]")) {
+    const logos = [...wrap.querySelectorAll<HTMLElement>(".dial-logo")];
+    const hubs = [...wrap.querySelectorAll<HTMLElement>(".hub-item")];
+    const count = logos.length;
+    const step = 360 / count;
+    const mod = (n: number, m: number) => ((n % m) + m) % m;
+    const snap = (deg: number) => Math.round(deg / step) * step;
+    let turn = 0, target = 0, active = 0, frame = 0;
+
+    const render = () => {
+      wrap.style.setProperty("--turn", `${turn}deg`);
+      const i = mod(Math.round(-turn / step), count);
+      if (i === active) return;
+      active = i;
+      logos.forEach((el, k) => el.toggleAttribute("data-active", k === i));
+      hubs.forEach((el, k) => el.toggleAttribute("data-active", k === i % hubs.length));
+    };
+    const ease = () => {
+      const left = target - turn;
+      if (reduceMotion || Math.abs(left) < 0.02) { turn = target; render(); frame = 0; return; }
+      turn += left * 0.09;
+      render();
+      frame = requestAnimationFrame(ease);
+    };
+    const spinTo = (deg: number) => { target = deg; frame ||= requestAnimationFrame(ease); };
+
+    // Angle of the pointer around the dial centre, clockwise from the top.
+    const angle = (e: PointerEvent) => {
+      const box = wrap.getBoundingClientRect();
+      const x = e.clientX - (box.left + box.width / 2), y = e.clientY - (box.top + box.height / 2);
+      return { deg: (Math.atan2(x, -y) * 180) / Math.PI, dist: Math.hypot(x, y), size: box.width };
+    };
+
+    let dragging = false, hovering = false, lastSpin = 0;
+    let startX = 0, startY = 0, lastDeg = 0, lastTime = 0, moved = 0, speed = 0;
+    wrap.addEventListener("pointerdown", (e) => {
+      const p = angle(e);
+      if (e.button !== 0 || p.dist < p.size * 0.26) return; // the centre is not a handle
+      dragging = true;
+      moved = speed = 0;
+      startX = e.clientX; startY = e.clientY;
+      lastDeg = p.deg; lastTime = e.timeStamp;
+      target = turn;
+      wrap.setPointerCapture(e.pointerId);
+      wrap.classList.add("is-dragging");
+    });
+    wrap.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const p = angle(e);
+      const delta = ((p.deg - lastDeg + 540) % 360) - 180;
+      moved = Math.max(moved, Math.hypot(e.clientX - startX, e.clientY - startY));
+      speed = 0.8 * (delta / Math.max(1, e.timeStamp - lastTime)) + 0.2 * speed;
+      turn += delta;
+      target = turn;
+      lastDeg = p.deg; lastTime = e.timeStamp;
+      render();
+    });
+    const release = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      wrap.classList.remove("is-dragging");
+      lastSpin = performance.now();
+      if (moved < TAP) {
+        // Turn the shortest way so the tapped slot lands under the pointer.
+        let slots = mod(Math.round((angle(e).deg - turn) / step) + snap(turn) / step, count);
+        if (slots > count / 2) slots -= count;
+        spinTo(snap(turn) - slots * step);
+        return;
+      }
+      // A flick carries on (at most about two turns), then settles on a slot.
+      spinTo(snap(turn + Math.max(-3, Math.min(3, speed)) * 260));
+    };
+    wrap.addEventListener("pointerup", release);
+    wrap.addEventListener("pointercancel", release);
+    wrap.addEventListener("pointerenter", (e) => (hovering = e.pointerType === "mouse"));
+    wrap.addEventListener("pointerleave", () => (hovering = false));
+
+    if (!reduceMotion) {
+      let visible = false;
+      new IntersectionObserver(([entry]) => (visible = entry.isIntersecting)).observe(wrap);
+      setInterval(() => {
+        if (visible && !hovering && !dragging && !document.hidden && performance.now() - lastSpin > IDLE_AFTER) spinTo(snap(target) - step);
+      }, AUTO_EVERY);
+    }
+  }
+</script>

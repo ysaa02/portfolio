@@ -1,62 +1,9 @@
 [
-  {
-    "id": "skill-1",
-    "order": 1,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-2",
-    "order": 2,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-3",
-    "order": 3,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-4",
-    "order": 4,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-5",
-    "order": 5,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-6",
-    "order": 6,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-7",
-    "order": 7,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-8",
-    "order": 8,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-9",
-    "order": 9,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-10",
-    "order": 10,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-11",
-    "order": 11,
-    "name": "[Skill]"
-  },
-  {
-    "id": "skill-12",
-    "order": 12,
-    "name": "[Skill]"
-  }
+  { "id": "java", "order": 1, "name": "Java", "category": "development", "icon": "java" },
+  { "id": "python", "order": 2, "name": "Python", "category": "development", "icon": "python", "color": "#3776AB" },
+  { "id": "html", "order": 3, "name": "HTML", "category": "development", "icon": "html5", "color": "#E34F26" },
+  { "id": "mysql", "order": 4, "name": "MySQL", "category": "development", "icon": "mysql" },
+  { "id": "figma", "order": 5, "name": "Figma", "category": "design", "icon": "figma", "color": "#F24E1E" },
+  { "id": "claude", "order": 6, "name": "Claude", "category": "ai-tools", "icon": "claude", "color": "#D97757" },
+  { "id": "codex", "order": 7, "name": "Codex", "category": "ai-tools", "icon": "openai" }
 ]

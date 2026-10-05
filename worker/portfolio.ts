@@ -40,7 +40,7 @@ export function buildSystemPrompt(): string {
     email: profile.email,
     links: list(profile.links.filter(({ url }) => filled(url)).map(({ label, url }) => ({ label, url }))),
     projects: list(byOrder(projects).map(({ title, description, tags, url }) => ({ title, description, tags, url }))),
-    skills: list(byOrder(skills).map(({ name }) => ({ name }))),
+    skills: list(byOrder(skills).map(({ name, category }) => ({ name, category }))),
     awards: list(byOrder(awards).map(({ title, issuer, year }) => ({ title, issuer, year }))),
     certifications: list(byOrder(certifications).map(({ title, issuer, year }) => ({ title, issuer, year }))),
     testimonials: list(byOrder(testimonials).map(({ quote, name, company }) => ({ quote, name, company }))),

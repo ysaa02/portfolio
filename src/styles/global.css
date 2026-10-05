@@ -102,8 +102,52 @@ h2 span, .prompt, .muted, .tags, .counter, .num { color: var(--muted); }
 .track .card { scroll-snap-align: start; }
 .counter { font-size: 13px; margin-top: 16px; }
 
-.grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-.grid li { border: 1px solid var(--line); background: var(--card); padding: 16px; text-align: center; }
+/* Skills: category tabs and the logo dial (script in Skills.astro). */
+/* overflow-x: clip keeps the spinning dial's rotated box from widening the page, which made phones zoom in and out. */
+.skills { display: grid; gap: clamp(40px, 6vw, 96px); overflow-x: clip; }
+@media (min-width: 768px) { .skills { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); align-items: center; } }
+.skill-tabs { display: flex; flex-direction: column; }
+.skill-tabs button {
+  font: inherit; font-size: 17px; text-align: left; padding: 12px; border: 0; border-radius: 2px; cursor: pointer;
+  background: none; color: var(--muted); transition: background 0.25s, color 0.25s;
+}
+.skill-tabs button:hover { color: var(--ink); }
+.skill-tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); font-weight: 600; }
+.skill-tabs .caret { visibility: hidden; }
+.skill-tabs [aria-selected="true"] .caret { visibility: visible; }
+
+.dial-wrap {
+  --turn: 0deg; position: relative; width: min(88%, 420px); aspect-ratio: 1; margin-inline: auto;
+  user-select: none; touch-action: none; cursor: grab;
+}
+.dial-wrap.is-dragging { cursor: grabbing; }
+.dial { position: absolute; inset: 0; rotate: var(--turn); }
+.dial > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.tick { stroke: var(--line); stroke-width: 1px; }
+.tick.major { stroke: var(--muted); }
+.dial-logo, .hub-logo { color: var(--ink); }
+.dial-logo svg, .hub-logo svg { display: block; width: 100%; height: 100%; fill: var(--brand, currentColor); }
+.dial-logo {
+  position: absolute; width: 7.5%; aspect-ratio: 1; translate: -50% -50%; rotate: calc(var(--turn) * -1);
+  filter: grayscale(1); opacity: 0.45; pointer-events: none; transition: filter 0.25s, opacity 0.25s, scale 0.25s;
+}
+.dial-logo[data-active] { filter: none; opacity: 1; scale: 1.2; }
+.needle { position: absolute; inset: 0; overflow: visible; pointer-events: none; stroke: var(--ink); stroke-width: 1.5px; fill: var(--ink); }
+.hub { position: absolute; inset: 34% 30% 30%; border-radius: 50%; touch-action: pan-y; }
+.hub-item {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; pointer-events: none; opacity: 0; translate: 0 6px; transition: opacity 0.2s, translate 0.35s;
+}
+.hub-item[data-active] { opacity: 1; translate: none; }
+.hub-logo { width: clamp(34px, 8vw, 48px); aspect-ratio: 1; }
+.hub-name { margin: 8px 0 0; font-size: clamp(16px, 2.4vw, 22px); }
+.hub-count { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+.dial-hint {
+  display: flex; align-items: center; gap: 8px; width: fit-content; margin: 24px auto 0; padding: 6px 14px;
+  border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted);
+}
+.dial-hint-icon { position: relative; width: 16px; height: 16px; border: 1px solid currentColor; border-radius: 50%; }
+.dial-hint-icon::after { content: ""; position: absolute; top: 50%; right: 2px; width: 4px; height: 4px; margin-top: -2px; border-radius: 50%; background: currentColor; }
 .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
 
 blockquote { margin: 0; font-size: clamp(18px, 2.5vw, 24px); max-width: 60ch; }
