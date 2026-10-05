@@ -1,7 +1,7 @@
 // Who the site is about. Replace each [PLACEHOLDER].
 export const profile = {
   name: "[YOUR NAME]",
-  handle: "[your-name]",
+  handle: "EL",
   loaderName: "Elaisa Laguerta",
   role: "[Your Role] · [Specialty] · [Specialty]",
   intro: "[A one or two sentence intro about what you build and who you build it for.]",
