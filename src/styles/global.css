@@ -198,10 +198,15 @@ blockquote footer { color: var(--muted); font-size: 14px; margin-top: 16px; }
 
 /* Chatbot */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.chat { position: fixed; right: 16px; bottom: 16px; z-index: 20; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+.chat {
+  position: fixed; right: 16px; bottom: 16px; z-index: 20; max-width: calc(100% - 32px);
+  display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
+}
 .chat-toggle { border: 1px solid var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
+/* While the chat is open the panel's own close button takes over, so the toggle steps aside. */
+.chat-toggle[aria-expanded="true"] { display: none; }
 .chat-panel {
-  display: flex; flex-direction: column; width: min(360px, calc(100vw - 32px)); height: min(480px, calc(100dvh - 96px));
+  display: flex; flex-direction: column; width: 360px; max-width: 100%; height: min(480px, calc(100dvh - 96px));
   background: var(--card); border: 1px solid var(--line); box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
 }
 .chat-panel[hidden] { display: none; }
@@ -234,6 +239,11 @@ blockquote footer { color: var(--muted); font-size: 14px; margin-top: 16px; }
 }
 .chip:hover { border-color: var(--ink); }
 .chip:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* Phones: the panel spans the screen between 12px gutters, so it never runs past either edge. */
+@media (max-width: 480px) {
+  .chat { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+  .chat-panel { width: 100%; height: min(480px, calc(100dvh - 84px)); }
+}
 
 /* Icons: sized to the text around them, colored by it. */
 .icon { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex-shrink: 0; }
